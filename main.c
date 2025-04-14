@@ -30,7 +30,22 @@ void on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_m
 
             // Respond with status
             char topic[128], payload[128];
-            snprintf(topic, sizeof(topic), "%s/pots/add/%s", pid->valuestring, cid->valuestring);
+            snprintf(topic, sizeof(topic), "pots/%s/add/%s", pid->valuestring, cid->valuestring);
+            snprintf(payload, sizeof(payload), "{\"status\": \"ok\", \"correlation_id\": \"%s\"}", cid->valuestring);
+
+            mosquitto_publish(mosq, NULL, topic, strlen(payload), payload, 0, false);
+            printf("Responded to %s\n", topic);
+            fflush(stdout);
+        }
+
+        if (cmd && cid && strcmp(cmd->valuestring, "pots/delete") == 0)
+        {
+            printf("Received deletion request for %s\n", pot_id);
+            fflush(stdout);
+
+            // Respond with status
+            char topic[128], payload[128];
+            snprintf(topic, sizeof(topic), "pots/%s/delete/%s", pid->valuestring, cid->valuestring);
             snprintf(payload, sizeof(payload), "{\"status\": \"ok\", \"correlation_id\": \"%s\"}", cid->valuestring);
 
             mosquitto_publish(mosq, NULL, topic, strlen(payload), payload, 0, false);
@@ -62,12 +77,13 @@ int main()
 
     printf("Connected to broker!\n");
     fflush(stdout);
-    // mosquitto_connect(mosq, "mqtt", 1883, 60);
-    // mosquitto_subscribe(mosq, NULL, "pots/add", 0);
     mosquitto_message_callback_set(mosq, on_message);
 
     char topic[128];
-    snprintf(topic, sizeof(topic), "%s/pots/add", pot_id);
+    snprintf(topic, sizeof(topic), "pots/%s/add", pot_id);
+    mosquitto_subscribe(mosq, NULL, topic, 0);
+
+    snprintf(topic, sizeof(topic), "pots/%s/delete", pot_id);
     mosquitto_subscribe(mosq, NULL, topic, 0);
 
     mosquitto_loop_forever(mosq, -1, 1);
