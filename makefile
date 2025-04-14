@@ -1,8 +1,8 @@
 CC = gcc
-CFLAGS = -Wall -Iinclude
+CFLAGS = -Wall -I/usr/local/include
 LDFLAGS = -lmosquitto -lcjson
 
-SRC = $(wildcard src/**/*.c) src/main.c
+SRC = src/main.c
 OBJ = $(SRC:.c=.o)
 TARGET = iot
 
