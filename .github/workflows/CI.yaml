@@ -1,0 +1,29 @@
+name: Build and Test IoT Project
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake gcc libmosquitto-dev
+
+      - name: Build project using Makefile
+        run: make
+
+      - name: Run tests
+        run: |
+          if [ -f ./test/run_tests.sh ]; then
+            chmod +x ./test/run_tests.sh
+            ./test/run_tests.sh
+          else
+            echo "No test runner script found. Skipping tests."
+          fi
