@@ -18,6 +18,17 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential cmake gcc libmosquitto-dev
 
+      - name: Clone and install cJSON
+        run: |
+          git clone https://github.com/DaveGamble/cJSON.git
+          cd cJSON && mkdir build && cd build
+          cmake .. && make && sudo make install
+          cd ../..
+          sudo mkdir -p /usr/local/include/cjson
+          if [ -f /usr/local/include/cJSON.h ]; then
+            sudo mv /usr/local/include/cJSON.h /usr/local/include/cjson/cJSON.h
+          fi
+          sudo ldconfig
       - name: Build project using Makefile
         run: make
 

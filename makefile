@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -I/usr/local/include
+CFLAGS = -Wall -I/usr/local/include/cjson
 LDFLAGS = -lmosquitto -lcjson
 
 SRC = src/main.c
