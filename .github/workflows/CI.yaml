@@ -1,9 +1,11 @@
 name: Build and Test IoT Project
 
 on:
+  push:
+    branches: [master]
   pull_request:
-    branches:
-      - master
+    branches: [master]
+  workflow_dispatch:
 
 jobs:
   build-and-test:
