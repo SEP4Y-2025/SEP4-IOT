@@ -1,17 +1,57 @@
+//
+// !!! WARNING !!! AUTO-GENERATED FILE!
+// PLEASE DO NOT MODIFY IT AND USE "platformio.ini":
+// https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags
+//
 {
     "configurations": [
         {
-            "name": "windows-gcc-x64",
+            "name": "PlatformIO",
             "includePath": [
-                "${workspaceFolder}/**",
-                "/iot/lib/**",
-                "/usr/include/**"
+                "c:/Users/martm/Desktop/School/SEM_4/SEP_PROJECT/SEP4-IOT/include",
+                "c:/Users/martm/Desktop/School/SEM_4/SEP_PROJECT/SEP4-IOT/src",
+                "C:/Users/martm/.platformio/packages/framework-arduino-avr/cores/arduino",
+                "C:/Users/martm/.platformio/packages/framework-arduino-avr/variants/mega",
+                "c:/Users/martm/Desktop/School/SEM_4/SEP_PROJECT/SEP4-IOT/lib/light",
+                "c:/Users/martm/Desktop/School/SEM_4/SEP_PROJECT/SEP4-IOT/lib/uart",
+                "C:/Users/martm/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                "C:/Users/martm/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                "C:/Users/martm/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "C:/Users/martm/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                "C:/Users/martm/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                ""
             ],
-            "compilerPath": "D:/msys64/mingw64/bin/gcc.exe",
-            "cStandard": "${default}",
-            "cppStandard": "${default}",
-            "intelliSenseMode": "windows-gcc-x64",
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "c:/Users/martm/Desktop/School/SEM_4/SEP_PROJECT/SEP4-IOT/include",
+                    "c:/Users/martm/Desktop/School/SEM_4/SEP_PROJECT/SEP4-IOT/src",
+                    "C:/Users/martm/.platformio/packages/framework-arduino-avr/cores/arduino",
+                    "C:/Users/martm/.platformio/packages/framework-arduino-avr/variants/mega",
+                    "c:/Users/martm/Desktop/School/SEM_4/SEP_PROJECT/SEP4-IOT/lib/light",
+                    "c:/Users/martm/Desktop/School/SEM_4/SEP_PROJECT/SEP4-IOT/lib/uart",
+                    "C:/Users/martm/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                    "C:/Users/martm/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                    "C:/Users/martm/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "C:/Users/martm/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                    "C:/Users/martm/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                    ""
+                ]
+            },
+            "defines": [
+                "PLATFORMIO=60118",
+                "ARDUINO_AVR_MEGA2560",
+                "F_CPU=16000000L",
+                "ARDUINO_ARCH_AVR",
+                "ARDUINO=10808",
+                "__AVR_ATmega2560__",
+                ""
+            ],
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++11",
+            "compilerPath": "C:/Users/martm/.platformio/packages/toolchain-atmelavr/bin/avr-gcc.exe",
             "compilerArgs": [
+                "-mmcu=atmega2560",
                 ""
             ]
         }

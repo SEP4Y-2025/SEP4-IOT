@@ -1,4 +1,28 @@
+#include "light.h"
+#include "uart.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <util/delay.h>
 
+int main(){
+
+    adc_init();
+    uartInit(9600);
+
+    char buffer[128];
+
+    while(1){
+        uint16_t lightValue = adc_read(0);
+        sprintf(buffer, "LightSensor: is %d\n", lightValue);
+        uartSend(buffer);
+        _delay_ms(500);
+    }
+
+    return 0;
+}
+
+
+/*
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,3 +100,4 @@ int main()
     mosquitto_lib_cleanup();
     return 0;
 }
+*/
