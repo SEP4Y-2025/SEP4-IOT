@@ -2,9 +2,9 @@
 #include "includes.h"
 #include "uart.h"
 
-#define WIFI_DATABUFFERSIZE 128
+#define WIFI_DATABUFFERSIZE 1024
 static uint8_t wifi_dataBuffer[WIFI_DATABUFFERSIZE];
-static uint8_t wifi_dataBufferIndex;
+static uint16_t wifi_dataBufferIndex;
 static uint32_t wifi_baudrate;
 
 void wifi_init()
@@ -13,11 +13,23 @@ void wifi_init()
     uart_init(USART_WIFI, wifi_baudrate, NULL);
 }
 
+
+
+
 /*
 void wifi_transmit(uint8_t *data, uint8_t length)
 {
     uart_send_array_blocking(USART_WIFI, data, length);
 }*/
+
+static void wifi_spy_callback(uint8_t byte) {
+    // 1) stash, if room
+    if (wifi_dataBufferIndex < WIFI_DATABUFFERSIZE - 1) {
+        wifi_dataBuffer[wifi_dataBufferIndex++] = byte;
+    }
+    // 2) echo raw to PC for debug
+    uart_send_blocking(USART_0, byte);
+}
 
 void static wifi_clear_databuffer_and_index()
 {
@@ -26,45 +38,51 @@ void static wifi_clear_databuffer_and_index()
     wifi_dataBufferIndex = 0;
 }
 
-void static wifi_command_callback(uint8_t received_byte)
+static void wifi_command_callback(uint8_t received_byte)
 {
-    wifi_dataBuffer[wifi_dataBufferIndex] = received_byte;
-    wifi_dataBufferIndex++;
+    if (wifi_dataBufferIndex < WIFI_DATABUFFERSIZE - 1) {
+        wifi_dataBuffer[wifi_dataBufferIndex++] = received_byte;
+    }
 }
+// core AT-command sender (no buffer‐clear at end!)
 WIFI_ERROR_MESSAGE_t wifi_command(const char *str, uint16_t timeOut_s)
 {
-    UART_Callback_t callback_state = uart_get_rx_callback(USART_WIFI);
+    UART_Callback_t old_cb = uart_get_rx_callback(USART_WIFI);
+
+    // 1) clear old data
+    wifi_clear_databuffer_and_index();
+
+    // 2) install our capture callback
     uart_init(USART_WIFI, wifi_baudrate, wifi_command_callback);
 
-    char sendbuffer[128];
-    strcpy(sendbuffer, str);
+    // 3) send the command + CRLF
+    char sbuf[128];
+    snprintf(sbuf, sizeof(sbuf), "%s\r\n", str);
+    uart_send_string_blocking(USART_WIFI, sbuf);
 
-    uart_send_string_blocking(USART_WIFI, strcat(sendbuffer, "\r\n"));
-
-    // better wait sequence...
-    for (uint16_t i = 0; i < timeOut_s * 100UL; i++) // timeout after 20 sec
-    {
+    // 4) wait up to timeOut_s seconds for an "OK" suffix
+    for (uint32_t i = 0; i < timeOut_s * 100; i++) {
         _delay_ms(10);
-        if (strstr((char *)wifi_dataBuffer, "OK\r\n") != NULL)
+        if (strstr((char*)wifi_dataBuffer, "OK\r\n")) {
             break;
+        }
     }
 
-    WIFI_ERROR_MESSAGE_t error;
+    // 5) determine result
+    WIFI_ERROR_MESSAGE_t res;
+    if (wifi_dataBufferIndex == 0) {
+        res = WIFI_ERROR_NOT_RECEIVING;
+    } else if (strstr((char*)wifi_dataBuffer, "ERROR")) {
+        res = WIFI_ERROR_RECEIVED_ERROR;
+    } else if (strstr((char*)wifi_dataBuffer, "FAIL")) {
+        res = WIFI_FAIL;
+    } else {
+        res = WIFI_OK;
+    }
 
-    if (wifi_dataBufferIndex == 0)
-        error = WIFI_ERROR_NOT_RECEIVING;
-    else if (strstr((char *)wifi_dataBuffer, "OK") != NULL)
-        error = WIFI_OK;
-    else if (strstr((char *)wifi_dataBuffer, "ERROR") != NULL)
-        error = WIFI_ERROR_RECEIVED_ERROR;
-    else if (strstr((char *)wifi_dataBuffer, "FAIL") != NULL)
-        error = WIFI_FAIL;
-    else
-        error = WIFI_ERROR_RECEIVING_GARBAGE;
-
-    wifi_clear_databuffer_and_index();
-    uart_init(USART_WIFI, wifi_baudrate, callback_state);
-    return error;
+    // 6) restore the previous callback (leave buffer intact)
+    uart_init(USART_WIFI, wifi_baudrate, old_cb);
+    return res;
 }
 
 WIFI_ERROR_MESSAGE_t wifi_command_AT()
@@ -304,5 +322,55 @@ WIFI_ERROR_MESSAGE_t wifi_command_TCP_transmit(uint8_t *data, uint16_t length)
         return errorMessage;
 
     uart_send_array_blocking(USART_WIFI, data, length);
+    return WIFI_OK;
+}
+
+
+
+WIFI_ERROR_MESSAGE_t wifi_scan_APs(uint16_t timeout_s)
+{
+    // 1) send the CWLAP and collect into wifi_dataBuffer
+    WIFI_ERROR_MESSAGE_t err = wifi_command("AT+CWLAP", timeout_s);
+    if (err != WIFI_OK) return err;
+
+    // 2) null-terminate
+    if (wifi_dataBufferIndex < WIFI_DATABUFFERSIZE) {
+        wifi_dataBuffer[wifi_dataBufferIndex] = '\0';
+    } else {
+        wifi_dataBuffer[WIFI_DATABUFFERSIZE - 1] = '\0';
+    }
+
+    // 3) debug dump raw (optional)
+    uart_send_string_blocking(USART_0,
+        "\r\n<--- RAW CWLAP START --->\r\n");
+    uart_send_array_blocking(USART_0,
+                             wifi_dataBuffer,
+                             (uint16_t)wifi_dataBufferIndex);
+    uart_send_string_blocking(USART_0,
+        "\r\n<--- RAW CWLAP END --->\r\n");
+
+    // 4) parse each +CWLAP: line
+    char *saveptr, *line = strtok_r((char*)wifi_dataBuffer, "\r\n", &saveptr);
+    while (line) {
+        if (strncmp(line, "+CWLAP:", 7) == 0) {
+            char ssid[33] = {0};
+            int  rssi    = 0;
+            if (sscanf(line,
+                       "+CWLAP:(%*d,\"%32[^\"]\",%d",
+                       ssid, &rssi) == 2) {
+                char msg[64];
+                int len = snprintf(msg, sizeof(msg),
+                                   "SSID: %s, RSSI: %d dBm\r\n",
+                                   ssid, rssi);
+                uart_send_array_blocking(USART_0,
+                                         (uint8_t*)msg,
+                                         (uint16_t)len);
+            }
+        }
+        line = strtok_r(NULL, "\r\n", &saveptr);
+    }
+
+    // 5) clear for next scan
+    wifi_clear_databuffer_and_index();
     return WIFI_OK;
 }

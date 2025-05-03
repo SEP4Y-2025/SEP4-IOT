@@ -99,12 +99,12 @@ int main() {
 
   // Connect to wifi network
   WIFI_ERROR_MESSAGE_t wifi_res =
-      wifi_command_join_AP("Betelgeuse", "Hello World");
+      wifi_command_join_AP("Kamtjatka_Only_For_Phones", "8755444387");
 
   // Connect to TCP server
   // Write callback function to type in the messag ein the uart
   char *_buff = malloc(100);
-  wifi_command_create_TCP_connection("192.168.120.58", 1883, my_event_cb, _buff);
+  wifi_command_create_TCP_connection("172.20.10.7", 1883, my_event_cb, _buff);
 
   // Log the result of the wifi connection
   char wifi_res_msg[128];

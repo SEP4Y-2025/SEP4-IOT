@@ -119,3 +119,11 @@ WIFI_ERROR_MESSAGE_t wifi_command_quit_AP();
  * @return WIFI_ERROR_MESSAGE_t Error message based on the response from the module.
  */
 WIFI_ERROR_MESSAGE_t wifi_command_close_TCP_connection();
+
+/**
+ * @brief Scan for all APs. Blocks until OK or timeout, then parses and
+ *        forwards each SSID+RSSI over the “PC” UART (USART_0).
+ * @param timeout_s How many seconds to wait for the scan.
+ * @return WIFI_ERROR_MESSAGE_t
+ */
+WIFI_ERROR_MESSAGE_t wifi_scan_APs(uint16_t timeout_s);
