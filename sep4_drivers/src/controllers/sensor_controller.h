@@ -15,8 +15,10 @@ void   sensor_controller_init(void);
 void   sensor_controller_poll(void);
 
 /** Get the *last* successful reading. */
-float  sensor_controller_get_temperature(void);
-float  sensor_controller_get_humidity(void);
+uint8_t  sensor_controller_get_temperature_decimal(void);
+uint8_t  sensor_controller_get_temperature_integer(void);
+uint8_t  sensor_controller_get_humidity_decimal(void);
+uint8_t  sensor_controller_get_humidity_integer(void);
 uint16_t sensor_controller_get_light(void);
 uint16_t sensor_controller_get_soil(void);
 

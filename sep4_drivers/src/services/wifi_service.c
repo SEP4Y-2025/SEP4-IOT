@@ -2,6 +2,7 @@
 
 #include "services/wifi_service.h"
 #include "controllers/network_controller.h"
+#include "services/logger_service.h"
 #include "scheduler.h"     // for scheduler_millis()
 
 typedef enum { DISCONNECTED, CONNECTING, CONNECTED } wifi_state_t;
@@ -53,4 +54,6 @@ void wifi_service_poll(void) {
         }
         break;
     }
+
+    //logger_service_log("Wifi state is: %s", state);
 }

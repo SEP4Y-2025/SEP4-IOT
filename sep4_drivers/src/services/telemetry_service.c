@@ -4,7 +4,7 @@
 #include "controllers/sensor_controller.h"
 #include "controllers/network_controller.h"
 #include "services/wifi_service.h"
-#include "controllers/mqtt_controller.h"               // create_mqtt_*_packet()
+#include "controllers/mqtt_controller.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -14,7 +14,7 @@ static uint16_t    svc_broker_port;
 static const char *svc_client_id;
 static const char *svc_topic;
 
-/// State flag: have we already connected?
+/// State flag: have we already done the CONNECT?
 static bool       svc_mqtt_connected = false;
 
 /// Scratch buffers
@@ -32,6 +32,8 @@ void telemetry_service_init(const char *broker_ip,
     svc_client_id    = client_id;
     svc_topic        = topic;
     svc_mqtt_connected = false;
+
+    // Configure the MQTT controller once
     mqtt_controller_config_t cfg = {
         .client_id          = svc_client_id,
         .keepalive_interval = 20,
@@ -44,10 +46,9 @@ void telemetry_service_init(const char *broker_ip,
 }
 
 void telemetry_service_poll(void) {
-    // Always drain incoming TCP data (e.g. CONNACK or other packets)
-    uint8_t tmp[128];
-    int n = network_controller_tcp_receive(tmp, sizeof(tmp));
-    (void)n;  // we ignore parsing here, but at least flush the buffer
+    // Drain any incoming bytes (e.g. CONNACK or errors)
+    //uint8_t tmp[128];
+    //(void)network_controller_tcp_receive(tmp, sizeof(tmp));
 }
 
 bool telemetry_service_publish(void) {
@@ -56,13 +57,15 @@ bool telemetry_service_publish(void) {
         return false;
     }
 
-    // 2) If needed, open TCP + send CONNECT
+    // 2) If needed, open TCP + send MQTT CONNECT
     if (!svc_mqtt_connected) {
         if (!network_controller_tcp_open(svc_broker_ip, svc_broker_port)) {
             return false;
         }
-        // build MQTT CONNECT packet
-        size_t connlen = create_mqtt_connect_packet(_pkt_buf, TEL_PKT_BUF_SZ);
+
+        size_t connlen = mqtt_controller_build_connect_packet(
+            _pkt_buf, TEL_PKT_BUF_SZ
+        );
         if (connlen == 0) {
             return false;
         }
@@ -70,38 +73,32 @@ bool telemetry_service_publish(void) {
             return false;
         }
         svc_mqtt_connected = true;
-        // give broker a moment to reply with CONNACK (it will be
-        // drained on the next poll() call)
+        // broker’s CONNACK will be drained next time poll() runs
     }
 
     // 3) Read latest sensors
     sensor_controller_poll();
-    uint8_t hum_i, hum_d, tmp_i, tmp_d;
-    hum_i = sensor_controller_get_humidity_integer();
-    hum_d = sensor_controller_get_humidity_decimal();
-    tmp_i = sensor_controller_get_temperature_integer();
-    tmp_d = sensor_controller_get_temperature_decimal();
+    float hum = sensor_controller_get_humidity();
+    float tmp = sensor_controller_get_temperature();
+    uint8_t soil = sensor_controller_get_soil();
     uint16_t light = sensor_controller_get_light();
 
     // 4) Format JSON payload
-    //    Example: {"temperature":23.7,"humidity":45.2,"light":502}
     int jlen = snprintf(_json_buf, sizeof(_json_buf),
-                        "{\"temperature\":%u.%u,"
-                        "\"humidity\":%u.%u,"
-                        "\"light\":%u}",
-                        tmp_i, tmp_d,
-                        hum_i, hum_d,
-                        light);
+        "{\"temperature\":%f,\"humidity\":%f,\"light\":%u, \"soil\":%u}",
+        tmp, hum, light, soil
+    );
     if (jlen <= 0) {
         return false;
     }
 
     // 5) Build MQTT PUBLISH packet (QoS0, no retain)
-    size_t pktlen = create_mqtt_transmit_packet(
-         (char*)svc_topic,
-         (unsigned char*)_json_buf,
-         _pkt_buf,
-         TEL_PKT_BUF_SZ
+    size_t pktlen = mqtt_controller_build_publish_packet(
+        svc_topic,
+        (unsigned char*)_json_buf,
+        (size_t)jlen,
+        _pkt_buf,
+        TEL_PKT_BUF_SZ
     );
     if (pktlen == 0) {
         return false;

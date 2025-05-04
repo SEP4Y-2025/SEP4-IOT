@@ -1,5 +1,8 @@
 #include "scheduler.h"
 #include "services/wifi_service.h"
+#include "services/telemetry_service.h"
+#include "services/sensor_service.h"
+#include "services/logger_service.h"
 //#include "controllers/sensor_controller.h"
 // … other includes …
 
@@ -11,8 +14,15 @@ int main(void) {
     scheduler_init();
 
     // 2) Init other hardware/services
+    logger_service_init(9600);
+    
+    logger_service_log("Wifi initialization");
     wifi_service_init("JanPhone", "nevole123");
-    sensor_controller_init();
+    
+    logger_service_log("Sensor initialization");
+    sensor_service_init(SENSOR_READ_INTERVAL);
+
+    logger_service_log("MQTT initialization");
     telemetry_service_init(
         "192.168.1.100",   // broker IP
         1883,              // broker port
@@ -24,21 +34,25 @@ int main(void) {
     uint32_t last_sensor_read = 0;
     uint32_t last_telemetry  = 0;
 
+    logger_service_log("Starting the loop");
     while (1) {
+        //scheduler_tick();
         // 4) Drive Wi-Fi state machine
-        wifi_service_poll();
+        //wifi_service_poll();
+        sensor_service_poll();
 
-        // 5) Sensor polling every SENSOR_READ_INTERVAL ms
-        if (scheduler_elapsed(&last_sensor_read, SENSOR_READ_INTERVAL)) {
-            sensor_controller_poll();
-            scheduler_mark(&last_sensor_read);
-        }
+        // // 5) Sensor polling every SENSOR_READ_INTERVAL ms
+        // if (scheduler_elapsed(&last_sensor_read, SENSOR_READ_INTERVAL)) {
+        //     sensor_service_poll();
+        //     scheduler_mark(&last_sensor_read);
+        // }
 
-        // 6) Telemetry every TELEMETRY_INTERVAL ms
-        if (scheduler_elapsed(&last_telemetry, TELEMETRY_INTERVAL)) {
-            telemetry_service_publish();
-            scheduler_mark(&last_telemetry);
-        }
+        // // 6) Telemetry every TELEMETRY_INTERVAL ms
+        // if (scheduler_elapsed(&last_telemetry, TELEMETRY_INTERVAL)) {
+        //     telemetry_service_publish();
+        //     logger_service_log("Telemetry sent");
+        //     scheduler_mark(&last_telemetry);
+        // }
 
         // 7) …other work…
     }
