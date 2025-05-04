@@ -4,6 +4,11 @@
 #include "services/sensor_service.h"
 #include "services/logger_service.h"
 #include "controllers/network_controller.h"
+#include "controllers/mqtt_client.h"
+#include "services/mqtt_service.h"
+#include "services/command_config.h"
+#include "services/command_service.h"
+// #include "services/"
 
 #include <avr/io.h>
 #include <avr/wdt.h>
@@ -13,10 +18,21 @@
 #define SENSOR_READ_INTERVAL   2000  // e.g. read sensors every 2 s
 #define TELEMETRY_INTERVAL     60000 // publish once a minute
 
+// { "Kamtjatka_Only_For_Phones",   "8755444387"   },
+// { "JanPhone", "Hello World" }
+// { "Kamtjatka10","8755444387" }
+
 static const wifi_credential_t my_nets[] = {
-    { "Kamtjatka_Only_For_Phones",   "8755444387"   },
-    { "JanPhone", "Hello World" },
-    { "Kamtjatka10","8755444387" }
+    { "JanPhone", "Hello World" }
+};
+
+static const mqtt_controller_config_t mqtt_cfg = {
+    .client_id          = "mega_iot_device",
+    .keepalive_interval = 60,
+    .cleansession       = 1,
+    .MQTTVersion        = 4,
+    .username           = NULL,
+    .password           = NULL,
 };
 
 int main(void) {
@@ -33,12 +49,13 @@ int main(void) {
     sensor_service_init(SENSOR_READ_INTERVAL);
 
     logger_service_log("MQTT initialization");
-    telemetry_service_init(
-        "172.20.10.3",   // broker IP
-        1883,              // broker port
-        "my_arduino",      // MQTT client ID
-        "sensor/telemetry" // topic
-    );
+    mqtt_service_init("172.20.10.3", 1883, &mqtt_cfg);
+
+    logger_service_log("Telemetry initialization");
+    telemetry_service_init("plant/telemetry");  
+    
+    logger_service_log("Command registration and initialization");
+    command_config_register_all();                 
 
     // 3) Timestamp variables for each job
     uint32_t last_sensor_read = 0;
@@ -48,8 +65,10 @@ int main(void) {
     while (1) {
 
         wifi_service_poll();
+
+
         //sensor_service_poll();
-        //telemetry_service_publish();
+        telemetry_service_publish();
 
         // if (scheduler_elapsed(&last_telemetry, SENSOR_READ_INTERVAL)) {
         //     telemetry_service_publish();

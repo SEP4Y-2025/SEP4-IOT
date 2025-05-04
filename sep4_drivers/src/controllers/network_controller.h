@@ -100,4 +100,13 @@ uint8_t network_controller_scan_aps(wifi_ap_t *list,
 
 bool network_controller_connect_best(const wifi_credential_t *known, uint8_t known_len, uint16_t scan_timeout_s);
 
+/**
+ * @brief Read up to `maxlen` bytes from the open TCP connection.
+ * @param buf    Pointer to a buffer to fill.
+ * @param maxlen Maximum bytes to read.
+ * @return Number of bytes actually read, or -1 on error.
+ */
+int  network_controller_tcp_receive(uint8_t *buf, uint16_t maxlen);
+
+
 #endif // NETWORK_CONTROLLER_H
