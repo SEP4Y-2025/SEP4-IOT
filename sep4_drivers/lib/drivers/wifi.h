@@ -127,3 +127,9 @@ WIFI_ERROR_MESSAGE_t wifi_command_close_TCP_connection();
  * @return WIFI_ERROR_MESSAGE_t
  */
 WIFI_ERROR_MESSAGE_t wifi_scan_APs(uint16_t timeout_s);
+
+/** After calling wifi_scan_APs(), return the raw buffer. */
+const char *wifi_get_scan_buffer(void);
+
+/** Return the length of that buffer (bytes). */
+uint16_t    wifi_get_scan_buffer_len(void);

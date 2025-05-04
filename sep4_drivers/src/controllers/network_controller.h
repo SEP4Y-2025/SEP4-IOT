@@ -5,6 +5,16 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+typedef struct {
+    char   ssid[33];   ///< Null-terminated SSID
+    int16_t rssi;      ///< RSSI in dBm
+} wifi_ap_t;
+
+typedef struct {
+    const char *ssid;      ///< Null-terminated SSID
+    const char *password;  ///< Null-terminated password
+} wifi_credential_t;
+
 /**
  * @brief Callback invoked when TCP data arrives.
  * @param data Pointer to buffer holding the received bytes.
@@ -66,5 +76,28 @@ bool network_controller_tcp_send(const uint8_t *data, uint16_t len);
  * @brief Close the TCP connection.
  */
 bool network_controller_tcp_close(void);
+
+/**
+ * @brief Scan for up to max_aps access points, filling the list.
+ * @param list      Caller-allocated array of length max_aps
+ * @param max_aps   Maximum entries to parse
+ * @param timeout_s How many seconds to wait for AT+CWLAP
+ * @return Number of entries actually parsed (≤ max_aps)
+ */
+uint8_t network_controller_scan_aps(wifi_ap_t *list,
+    uint8_t    max_aps,
+    uint16_t   timeout_s);
+
+/**
+* @brief Given a compile-time list of known SSID/password pairs, scan for
+*        the strongest available and connect to it.
+*
+* @param known     Array of wifi_credentials_t pairs
+* @param known_len Number of entries in known[]
+* @param scan_timeout_s Timeout for the CWLAP scan
+* @return true on successful connect, false otherwise
+*/
+
+bool network_controller_connect_best(const wifi_credential_t *known, uint8_t known_len, uint16_t scan_timeout_s);
 
 #endif // NETWORK_CONTROLLER_H

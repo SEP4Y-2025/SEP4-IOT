@@ -1,5 +1,5 @@
 // wifi_service.h
-
+#include "controllers/network_controller.h"
 #ifndef WIFI_SERVICE_H
 #define WIFI_SERVICE_H
 
@@ -11,8 +11,8 @@
  * - Calls your network_controller init + setup under the hood.
  * - Stores SSID/password for later.
  */
-void wifi_service_init(const char *ssid, const char *password);
 
+void wifi_service_init_best(const wifi_credential_t *known, uint8_t known_len);
 /**
  * Drive the WiFi state machine.  
  * Call this every time through your main loop (e.g. 1–10 ms cadence).

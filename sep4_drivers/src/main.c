@@ -3,6 +3,8 @@
 #include "services/telemetry_service.h"
 #include "services/sensor_service.h"
 #include "services/logger_service.h"
+#include "controllers/network_controller.h"
+
 #include <avr/io.h>
 #include <avr/wdt.h>
 //#include "controllers/sensor_controller.h"
@@ -11,6 +13,11 @@
 #define SENSOR_READ_INTERVAL   2000  // e.g. read sensors every 2 s
 #define TELEMETRY_INTERVAL     60000 // publish once a minute
 
+static const wifi_credential_t my_nets[] = {
+    { "Kamtjatka_Only_For_Phones",   "8755444387"   },
+    { "JanPhone", "Hello World" },
+    { "Kamtjatka10","8755444387" }
+};
 
 int main(void) {
     // 1) Init your 1 ms tick
@@ -20,7 +27,7 @@ int main(void) {
     logger_service_init(9600);
     
     logger_service_log("Wifi initialization");
-    wifi_service_init("JanPhone", "Hello World");
+    wifi_service_init_best(my_nets, sizeof(my_nets)/sizeof(*my_nets));
     
     logger_service_log("Sensor initialization");
     sensor_service_init(SENSOR_READ_INTERVAL);
@@ -39,16 +46,16 @@ int main(void) {
 
     logger_service_log("Starting the loop");
     while (1) {
-        
+
         wifi_service_poll();
         //sensor_service_poll();
         //telemetry_service_publish();
 
-        if (scheduler_elapsed(&last_telemetry, SENSOR_READ_INTERVAL)) {
-            telemetry_service_publish();
-            logger_service_log("Telemetry sent");
-            scheduler_mark(&last_telemetry);
-        }
+        // if (scheduler_elapsed(&last_telemetry, SENSOR_READ_INTERVAL)) {
+        //     telemetry_service_publish();
+        //     //logger_service_log("Telemetry sent");
+        //     scheduler_mark(&last_telemetry);
+        // }
 
     }
 }

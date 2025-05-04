@@ -6,6 +6,7 @@
 #include "services/logger_service.h"
 #include "scheduler.h"     // for scheduler_millis()
 
+
 typedef enum { DISCONNECTED = 0,
   CONNECTING   = 1,
   CONNECTED    = 2,
@@ -22,15 +23,18 @@ static wifi_state_t state;
 static const char *ssid, *pass;
 static uint32_t      last_ms;
 
-void wifi_service_init(const char *s, const char *p) {
-    ssid        = s;
-    pass        = p;
-    state       = DISCONNECTED;
-    last_ms     = scheduler_millis();
-    network_controller_init();
-    network_controller_setup();
+static const wifi_credential_t *known_nets;
+static uint8_t known_nets_len;
 
-    logger_service_log("Wi-Fi init: SSID=\"%s\"", ssid);
+void wifi_service_init_best(const wifi_credential_t *nets, uint8_t nets_len) {
+  known_nets     = nets;
+  known_nets_len = nets_len;
+  state          = DISCONNECTED;
+  last_ms        = scheduler_millis();
+
+  network_controller_init();
+  network_controller_setup();
+  logger_service_log("Wi-Fi smart init: %u candidates", (unsigned)known_nets_len);
 }
 
 bool wifi_service_is_connected(void) {
@@ -44,10 +48,14 @@ void wifi_service_poll(void) {
     switch (state) {
       case DISCONNECTED:
         if (now - last_ms >= 5000) {
-          logger_service_log("Wi-Fi: trying to connect to \"%s\"", ssid);
-          network_controller_connect_ap(ssid, pass);
-          state   = CONNECTING;
-          last_ms = now;
+            if (network_controller_connect_best(
+                    known_nets, known_nets_len, /* scan timeout */ 10
+                )) {
+                state = CONNECTING;
+            } else {
+                logger_service_log("All connects failed, retry in 5s");
+            }
+            last_ms = now;
         }
         break;
 

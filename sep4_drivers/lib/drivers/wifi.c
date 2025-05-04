@@ -329,6 +329,7 @@ WIFI_ERROR_MESSAGE_t wifi_command_TCP_transmit(uint8_t *data, uint16_t length)
 
 WIFI_ERROR_MESSAGE_t wifi_scan_APs(uint16_t timeout_s)
 {
+    wifi_clear_databuffer_and_index();
     // 1) send the CWLAP and collect into wifi_dataBuffer
     WIFI_ERROR_MESSAGE_t err = wifi_command("AT+CWLAP", timeout_s);
     if (err != WIFI_OK) return err;
@@ -371,6 +372,13 @@ WIFI_ERROR_MESSAGE_t wifi_scan_APs(uint16_t timeout_s)
     }
 
     // 5) clear for next scan
-    wifi_clear_databuffer_and_index();
+    
     return WIFI_OK;
+}
+const char *wifi_get_scan_buffer(void) {
+    return (const char*)wifi_dataBuffer;
+}
+
+uint16_t wifi_get_scan_buffer_len(void) {
+    return wifi_dataBufferIndex;
 }

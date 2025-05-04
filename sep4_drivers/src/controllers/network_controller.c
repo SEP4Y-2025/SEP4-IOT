@@ -71,3 +71,92 @@ bool network_controller_tcp_send(const uint8_t *data, uint16_t len) {
 bool network_controller_tcp_close(void) {
     return (wifi_command_close_TCP_connection() == WIFI_OK);
 }
+
+uint8_t network_controller_scan_aps(wifi_ap_t *list,
+                                    uint8_t max_aps,
+                                    uint16_t timeout_s)
+{
+    if (wifi_scan_APs(timeout_s) != WIFI_OK) {
+        logger_service_log("AP Scan failed");
+        return 0;
+    }
+
+    const char *raw = wifi_get_scan_buffer();
+    // make a modifiable copy
+    char *buf = strdup(raw);
+    if (!buf) return 0;
+
+    uint8_t count = 0;
+    char *saveptr = NULL;
+    for (char *line = strtok_r(buf, "\r\n", &saveptr);
+         line && count < max_aps;
+         line = strtok_r(NULL, "\r\n", &saveptr))
+    {
+        if (strncmp(line, "+CWLAP:", 7) == 0) {
+            wifi_ap_t ap = { .ssid = "", .rssi = -999 };
+            // Example line: +CWLAP:(3,"MySSID",-60,"MAC",1)
+            if (sscanf(line,
+                       "+CWLAP:(%*d,\"%32[^\"]\",%hd",
+                       ap.ssid, &ap.rssi) == 2)
+            {
+                logger_service_log("Found AP '%s' RSSI %d",
+                                    ap.ssid, ap.rssi);
+                list[count++] = ap;
+            }
+        }
+    }
+    free(buf);
+    return count;
+}
+
+
+
+bool network_controller_connect_best(const wifi_credential_t *known,
+                                     uint8_t                  known_len,
+                                     uint16_t                 scan_timeout_s)
+{
+    // 1) Scan all APs
+    #define MAX_SCAN_APS 20
+    wifi_ap_t aps[MAX_SCAN_APS];
+    uint8_t  found = network_controller_scan_aps(aps, MAX_SCAN_APS, scan_timeout_s);
+    if (found == 0) {
+        logger_service_log("connect_best: no APs found");
+        return false;
+    }
+
+    // 2) For each known network, track its best RSSI
+    int16_t best_rssi = -32768;
+    int     best_idx  = -1;  // index into known[]
+
+    for (uint8_t k = 0; k < known_len; k++) {
+        int16_t max_rssi_for_this = -32768;
+        for (uint8_t i = 0; i < found; i++) {
+            if (strcmp(known[k].ssid, aps[i].ssid) == 0) {
+                if (aps[i].rssi > max_rssi_for_this) {
+                    max_rssi_for_this = aps[i].rssi;
+                }
+            }
+        }
+        if (max_rssi_for_this > best_rssi) {
+            best_rssi = max_rssi_for_this;
+            best_idx  = k;
+        }
+    }
+
+    if (best_idx < 0) {
+        logger_service_log("connect_best: none of the %u known SSIDs were in range", (unsigned)known_len);
+        return false;
+    }
+
+    // 3) We have a winner
+    const char *chosen_ssid = known[best_idx].ssid;
+    const char *chosen_pwd  = known[best_idx].password;
+    logger_service_log("connect_best: choosing '%s' (RSSI=%d)", chosen_ssid, best_rssi);
+
+    // 4) Attempt the connection
+    bool ok = network_controller_connect_ap(chosen_ssid, chosen_pwd);
+    logger_service_log("connect_best: AT+CWJAP \"%s\" → %s",
+                       chosen_ssid, ok ? "OK" : "FAIL");
+    return ok;
+}
+
