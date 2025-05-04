@@ -17,7 +17,7 @@ int main(void) {
     logger_service_init(9600);
     
     logger_service_log("Wifi initialization");
-    wifi_service_init("JanPhone", "nevole123");
+    wifi_service_init("Kamtjatka_Only_For_Phones", "8755444387");
     
     logger_service_log("Sensor initialization");
     sensor_service_init(SENSOR_READ_INTERVAL);
@@ -38,8 +38,8 @@ int main(void) {
     while (1) {
         //scheduler_tick();
         // 4) Drive Wi-Fi state machine
-        //wifi_service_poll();
-        sensor_service_poll();
+        wifi_service_poll();
+        //sensor_service_poll();
 
         // // 5) Sensor polling every SENSOR_READ_INTERVAL ms
         // if (scheduler_elapsed(&last_sensor_read, SENSOR_READ_INTERVAL)) {

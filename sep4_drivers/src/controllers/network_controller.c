@@ -32,7 +32,10 @@ bool network_controller_setup(void) {
 }
 
 bool network_controller_connect_ap(const char *ssid, const char *password) {
-    return (wifi_command_join_AP((char*)ssid, (char*)password) == WIFI_OK);  // :contentReference[oaicite:4]{index=4}:contentReference[oaicite:5]{index=5}
+    bool ok = (wifi_command_join_AP((char*)ssid, (char*)password) == WIFI_OK);
+    logger_service_log("AT+CWJAP \"%s\": %s",
+                       ssid, ok ? "OK" : "FAIL");
+    return ok;
 }
 
 bool network_controller_disconnect_ap(void) {
@@ -40,18 +43,23 @@ bool network_controller_disconnect_ap(void) {
 }
 
 bool network_controller_is_ap_connected(void) {
-    // a quick AT check; if module responds, assume link is OK
-    return (wifi_command_AT() == WIFI_OK);
+    bool ok = (wifi_command_AT() == WIFI_OK);
+    // We’ll get lots of these; log only on failure
+    if (!ok) {
+        logger_service_log("AT: no response (disconnected)");
+    }
+    return ok;
 }
 
 bool network_controller_tcp_open(const char *ip, uint16_t port) {
-    // hands our internal buffer & internal callback to the wifi driver:
-    return (wifi_command_create_TCP_connection(
-                (char*)ip,
-                port,
-                internal_tcp_cb,
-                (char*)net_rx_buffer
-            ) == WIFI_OK);  // :contentReference[oaicite:6]{index=6}:contentReference[oaicite:7]{index=7}
+    bool ok = (wifi_command_create_TCP_connection(
+                    (char*)ip, port, internal_tcp_cb,
+                    (char*)net_rx_buffer
+               ) == WIFI_OK);
+    logger_service_log("AT+CIPSTART \"%s\",%u: %s",
+                       ip, (unsigned)port,
+                       ok ? "OK" : "FAIL");
+    return ok;
 }
 
 void network_controller_set_tcp_callback(Network_TCP_Callback_t cb) {
