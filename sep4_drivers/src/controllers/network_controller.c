@@ -1,5 +1,5 @@
 // src/controllers/network_controller.c
-#include "controllers/wifi_controller.h"
+#include "controllers/network_controller.h"
 #include "wifi.h"    // your existing wifi_command_* APIs :contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1}
 #include <string.h>
 

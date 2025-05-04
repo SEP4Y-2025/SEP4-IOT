@@ -11,9 +11,14 @@ int main(void) {
     scheduler_init();
 
     // 2) Init other hardware/services
-    wifi_service_init("SSID", "PASS");
+    wifi_service_init("JanPhone", "nevole123");
     sensor_controller_init();
-    // …
+    telemetry_service_init(
+        "192.168.1.100",   // broker IP
+        1883,              // broker port
+        "my_arduino",      // MQTT client ID
+        "sensor/telemetry" // topic
+    );
 
     // 3) Timestamp variables for each job
     uint32_t last_sensor_read = 0;

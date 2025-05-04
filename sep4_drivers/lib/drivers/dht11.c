@@ -36,7 +36,7 @@ void dht11_init() {
 
 
 #define MAX_TIMINGS	85
-DHT11_ERROR_MESSAGE_t dht11_get(uint8_t* humidity_integer, uint8_t*  humidity_decimal, uint8_t* temperature_integer, uint8_t* temperature_decimal)
+DHT11_ERROR_MESSAGE_t  dht11_get(uint8_t* humidity_integer, uint8_t*  humidity_decimal, uint8_t* temperature_integer, uint8_t* temperature_decimal)
 {
     
 	uint8_t laststate	= 1;
