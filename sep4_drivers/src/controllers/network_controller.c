@@ -1,5 +1,6 @@
 // src/controllers/network_controller.c
 #include "controllers/network_controller.h"
+#include "services/logger_service.h"
 #include "wifi.h"    // your existing wifi_command_* APIs :contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1}
 #include <string.h>
 
@@ -33,8 +34,7 @@ bool network_controller_setup(void) {
 
 bool network_controller_connect_ap(const char *ssid, const char *password) {
     bool ok = (wifi_command_join_AP((char*)ssid, (char*)password) == WIFI_OK);
-    logger_service_log("AT+CWJAP \"%s\": %s",
-                       ssid, ok ? "OK" : "FAIL");
+    logger_service_log("AT+CWJAP \"%s\": %s", ssid, ok ? "OK" : "FAIL");
     return ok;
 }
 
@@ -56,9 +56,7 @@ bool network_controller_tcp_open(const char *ip, uint16_t port) {
                     (char*)ip, port, internal_tcp_cb,
                     (char*)net_rx_buffer
                ) == WIFI_OK);
-    logger_service_log("AT+CIPSTART \"%s\",%u: %s",
-                       ip, (unsigned)port,
-                       ok ? "OK" : "FAIL");
+    logger_service_log("AT+CIPSTART \"%s\",%u: %s", ip, (unsigned)port, ok ? "OK" : "FAIL");
     return ok;
 }
 

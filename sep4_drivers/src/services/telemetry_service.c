@@ -62,10 +62,7 @@ bool telemetry_service_publish(void) {
         if (!network_controller_tcp_open(svc_broker_ip, svc_broker_port)) {
             return false;
         }
-
-        size_t connlen = mqtt_controller_build_connect_packet(
-            _pkt_buf, TEL_PKT_BUF_SZ
-        );
+        size_t connlen = mqtt_controller_build_connect_packet(_pkt_buf, TEL_PKT_BUF_SZ);
         if (connlen == 0) {
             return false;
         }
@@ -73,20 +70,29 @@ bool telemetry_service_publish(void) {
             return false;
         }
         svc_mqtt_connected = true;
-        // broker’s CONNACK will be drained next time poll() runs
+        // CONNACK will be drained in the next poll()
     }
 
     // 3) Read latest sensors
     sensor_controller_poll();
-    float hum = sensor_controller_get_humidity();
-    float tmp = sensor_controller_get_temperature();
-    uint8_t soil = sensor_controller_get_soil();
+    uint8_t hum_i = sensor_controller_get_humidity_integer();
+    uint8_t hum_d = sensor_controller_get_humidity_decimal();
+    uint8_t tmp_i = sensor_controller_get_temperature_integer();
+    uint8_t tmp_d = sensor_controller_get_temperature_decimal();
     uint16_t light = sensor_controller_get_light();
+    uint8_t soil   = sensor_controller_get_soil();
 
-    // 4) Format JSON payload
+    // 4) Format JSON payload without floats
+    //    e.g. {"temperature":27.8,"humidity":33.0,"light":502,"soil":123}
     int jlen = snprintf(_json_buf, sizeof(_json_buf),
-        "{\"temperature\":%f,\"humidity\":%f,\"light\":%u, \"soil\":%u}",
-        tmp, hum, light, soil
+        "{\"temperature\":%u.%u,"
+        "\"humidity\":%u.%u,"
+        "\"light\":%u,"
+        "\"soil\":%u}",
+        (unsigned)tmp_i, (unsigned)tmp_d,
+        (unsigned)hum_i, (unsigned)hum_d,
+        (unsigned)light,
+        (unsigned)soil
     );
     if (jlen <= 0) {
         return false;
@@ -111,3 +117,4 @@ bool telemetry_service_publish(void) {
 
     return true;
 }
+

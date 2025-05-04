@@ -21,15 +21,15 @@ void sensor_controller_init(void) {
 void sensor_controller_poll(void) {
     DHT11_ERROR_MESSAGE_t err = dht11_get(&_hum[0], &_hum[1], &_temp[0], &_temp[1]);
     
-    if (err == DHT11_OK) {
-        // successful read → log the precise values
-        logger_service_log(
-            "DHT11 OK"
-        );
-    } else {
-        // failed read → log an error
-        logger_service_log("DHT11 read FAILED");
-    }
+    // if (err == DHT11_OK) {
+    //     // successful read → log the precise values
+    //     logger_service_log(
+    //         "DHT11 OK"
+    //     );
+    // } else {
+    //     // failed read → log an error
+    //     logger_service_log("DHT11 read FAILED");
+    // }
     
     _light = light_read();
     _soil = soil_read();

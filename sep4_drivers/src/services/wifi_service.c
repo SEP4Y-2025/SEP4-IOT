@@ -6,7 +6,17 @@
 #include "services/logger_service.h"
 #include "scheduler.h"     // for scheduler_millis()
 
-typedef enum { DISCONNECTED, CONNECTING, CONNECTED } wifi_state_t;
+typedef enum { DISCONNECTED = 0,
+  CONNECTING   = 1,
+  CONNECTED    = 2,
+  WIFI_STATE_MAX
+} wifi_state_t;
+
+static const char *const WIFI_STATE_NAMES[WIFI_STATE_MAX] = {
+  "DISCONNECTED",
+  "CONNECTING",
+  "CONNECTED"
+};
 
 static wifi_state_t state;
 static const char *ssid, *pass;
@@ -59,10 +69,25 @@ void wifi_service_poll(void) {
           last_ms = now;
         }
         break;
+      
+      default:
+        // If somehow we end up outside 0–2, force back to DISCONNECTED
+        state = DISCONNECTED;
+        last_ms = now;
+        break;
     }
-    if (state != old) {
-      static const char *names[] = { "DISCONNECTED", "CONNECTING", "CONNECTED" };
-      logger_service_log("Wi-Fi state: %s → %s", names[old], names[state]);
+    // Only log when the state actually changes
+  if (state != old) {
+    // Now print the human‐readable form, clamping into range
+    const char *old_name = (old < WIFI_STATE_MAX)
+        ? WIFI_STATE_NAMES[old] : "UNKNOWN";
+    const char *new_name = (state < WIFI_STATE_MAX)
+        ? WIFI_STATE_NAMES[state] : "UNKNOWN";
+
+    logger_service_log(
+        "Wi-Fi state: %s → %s",
+        old_name, new_name
+    );
   }
 
     //logger_service_log("Wifi state is: %s", state);
