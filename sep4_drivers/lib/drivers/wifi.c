@@ -1,6 +1,7 @@
 #include "wifi.h"
 #include "includes.h"
 #include "uart.h"
+#include <stdbool.h>
 
 #define WIFI_DATABUFFERSIZE 1024
 static uint8_t wifi_dataBuffer[WIFI_DATABUFFERSIZE];
@@ -320,18 +321,45 @@ WIFI_ERROR_MESSAGE_t wifi_command_create_TCP_connection(char *IP, uint16_t port,
 
 WIFI_ERROR_MESSAGE_t wifi_command_TCP_transmit(uint8_t *data, uint16_t length)
 {
-    char sendbuffer[128];
-    char portString[7];
-    strcpy(sendbuffer, "AT+CIPSEND=");
-    sprintf(portString, "%u", length);
-    strcat(sendbuffer, portString);
+    char cmd[32];
+    snprintf(cmd, sizeof(cmd), "AT+CIPSEND=%u", length);
 
-    WIFI_ERROR_MESSAGE_t errorMessage = wifi_command(sendbuffer, 20);
-    if (errorMessage != WIFI_OK)
-        return errorMessage;
+    // 1) clear buffer & send CIPSEND
+    wifi_clear_databuffer_and_index();
+    if (wifi_command(cmd, 2) != WIFI_OK)
+    {
+        return WIFI_ERROR_RECEIVED_ERROR;
+    }
 
+    // 2) wait for '>' prompt
+    uint32_t deadline = scheduler_millis() + 2000;
+    bool have_prompt = false;
+    while (scheduler_millis() < deadline)
+    {
+        if (strchr((char *)wifi_dataBuffer, '>'))
+        {
+            have_prompt = true;
+            break;
+        }
+    }
+    if (!have_prompt)
+    {
+        return WIFI_ERROR_RECEIVING_GARBAGE;
+    }
+
+    // 3) send the raw packet
     uart_send_array_blocking(USART_WIFI, data, length);
-    return WIFI_OK;
+
+    // 4) wait for SEND OK
+    deadline = scheduler_millis() + 2000;
+    while (scheduler_millis() < deadline)
+    {
+        if (strstr((char *)wifi_dataBuffer, "SEND OK"))
+        {
+            return WIFI_OK;
+        }
+    }
+    return WIFI_ERROR_NOT_RECEIVING;
 }
 
 WIFI_ERROR_MESSAGE_t wifi_scan_APs(uint16_t timeout_s)

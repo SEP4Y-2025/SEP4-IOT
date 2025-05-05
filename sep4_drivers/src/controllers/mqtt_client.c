@@ -92,7 +92,7 @@ bool mqtt_client_publish(const char *topic, const uint8_t *payload, uint16_t len
         logger_service_log("MQTT Client: build_publish failed");
         return false;
     }
-    bool ok = _send_packet(buf, len);
+    bool ok = network_controller_tcp_send(buf, len);
     logger_service_log("MQTT Client: PUBLISH '%s' send → %d", topic, ok);
     return ok;
 }

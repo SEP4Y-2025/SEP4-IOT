@@ -79,7 +79,15 @@ void network_controller_set_tcp_callback(Network_TCP_Callback_t cb)
 
 bool network_controller_tcp_send(const uint8_t *data, uint16_t len)
 {
-    return (wifi_command_TCP_transmit((uint8_t *)data, len) == WIFI_OK);
+    logger_service_log("Net Ctrl: tcp_send %u bytes…", len);
+
+    WIFI_ERROR_MESSAGE_t err = wifi_command_TCP_transmit(
+        (uint8_t *)data, len);
+
+    bool ok = (err == WIFI_OK);
+    logger_service_log("Net Ctrl: CIPSEND → %s (%d)",
+                       ok ? "OK" : "FAIL", err);
+    return ok;
 }
 
 bool network_controller_tcp_close(void)
