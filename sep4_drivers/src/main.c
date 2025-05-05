@@ -6,8 +6,9 @@
 #include "controllers/network_controller.h"
 #include "controllers/mqtt_client.h"
 #include "services/mqtt_service.h"
-#include "services/command_config.h"
-#include "services/command_service.h"
+// #include "services/command_config.h"
+// #include "services/command_service.h"
+#include "config.h"
 // #include "services/"
 
 #include <avr/io.h>
@@ -25,15 +26,6 @@
 static const wifi_credential_t my_nets[] = {
     {"JanPhone", "Hello World"}};
 
-static const mqtt_controller_config_t mqtt_cfg = {
-    .client_id = "mega_iot_device",
-    .keepalive_interval = 60,
-    .cleansession = 1,
-    .MQTTVersion = 4,
-    .username = "",
-    .password = "",
-};
-
 int main(void)
 {
   // 1) Init your 1 ms tick
@@ -49,13 +41,13 @@ int main(void)
   sensor_service_init(SENSOR_READ_INTERVAL);
 
   logger_service_log("MQTT initialization");
-  mqtt_service_init("172.20.10.3", 1883, &mqtt_cfg);
+  mqtt_service_init("172.20.10.3", 1883, NULL, &mqtt_cfg);
 
   logger_service_log("Telemetry initialization");
   telemetry_service_init("plant/telemetry");
 
-  logger_service_log("Command registration and initialization");
-  command_config_register_all();
+  // logger_service_log("Command registration and initialization");
+  // command_config_register_all();
 
   // 3) Timestamp variables for each job
   uint32_t last_sensor_read = 0;
@@ -77,6 +69,7 @@ int main(void)
     if (scheduler_elapsed(&last_telemetry, SENSOR_READ_INTERVAL))
     {
       telemetry_service_publish();
+      // mqtt_service_publish();
       // logger_service_log("Telemetry sent");
       scheduler_mark(&last_telemetry);
     }

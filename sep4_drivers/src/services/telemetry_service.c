@@ -26,13 +26,6 @@ void telemetry_service_poll(void)
 
 bool telemetry_service_publish(void)
 {
-    // 1) Ensure MQTT session is up (CONNECT + CONNACK under the hood)
-    if (!mqtt_service_connect())
-    {
-        return false;
-    }
-
-    // 2) Sample sensors
     sensor_controller_poll();
     uint8_t tmp_i = sensor_controller_get_temperature_integer();
     uint8_t tmp_d = sensor_controller_get_temperature_decimal();
@@ -58,9 +51,13 @@ bool telemetry_service_publish(void)
 
     logger_service_log("Telemetry: JSON payload (%d bytes): %s", jlen, _json_buf);
 
-    return mqtt_service_publish(_svc_topic,
-                                (unsigned char *)_json_buf,
-                                (size_t)jlen);
+    return mqtt_service_publish(
+        _svc_topic,
+        (const uint8_t *)_json_buf,
+        (uint16_t)jlen,
+        0,    // QoS level
+        false // retain flag
+    );
     // size_t pktlen = mqtt_controller_build_publish_packet(
     //     _svc_topic,
     //     (unsigned char *)_json_buf,
