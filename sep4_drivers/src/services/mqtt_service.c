@@ -29,6 +29,7 @@ bool mqtt_service_connect(void)
     if (!wifi_service_is_connected())
     {
         logger_service_log("MQTT Service: Wi‑Fi not yet connected");
+        _connected = false;
         return false;
     }
     logger_service_log("MQTT Service: opening TCP + MQTT connect…");
@@ -40,6 +41,7 @@ bool mqtt_service_connect(void)
     if (!mqtt_client_connect(_svc_broker_ip, _svc_broker_port))
     {
         logger_service_log("MQTT Service: MQTT connect failed");
+        _connected = false;
         return false;
     }
     _connected = true;
@@ -49,7 +51,7 @@ bool mqtt_service_connect(void)
 
 bool mqtt_service_publish(const char *topic, const uint8_t *payload, uint16_t len)
 {
-    if (!_connected && !mqtt_service_connect())
+    if (!_connected)
     {
         logger_service_log("MQTT Service: publish failed, not connected");
         return false;

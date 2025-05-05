@@ -2,7 +2,6 @@
 #define MQTT_CLIENT_H
 #include "mqtt_controller.h"
 
-
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -22,7 +21,7 @@ void mqtt_client_init(const mqtt_controller_config_t *cfg);
  * Returns true on successful CONNACK.
  */
 bool mqtt_client_connect(const char *broker_ip,
-                         uint16_t      broker_port);
+                         uint16_t broker_port);
 
 /**
  * Subscribe to a topic (QoS0).  Returns true on SUBACK.

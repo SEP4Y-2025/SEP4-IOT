@@ -24,7 +24,7 @@ void mqtt_client_init(const mqtt_controller_config_t *cfg)
 
 bool mqtt_client_connect(const char *broker_ip, uint16_t broker_port)
 {
-    unsigned char buf[256];
+    // unsigned char buf[256];
     logger_service_log("MQTT Client: connecting to %s:%u",
                        broker_ip, broker_port);
 
@@ -35,25 +35,27 @@ bool mqtt_client_connect(const char *broker_ip, uint16_t broker_port)
         return false;
     }
 
-    // 2) CONNECT packet
-    size_t len = mqtt_controller_build_connect_packet(buf, sizeof(buf));
-    if (len == 0 || !network_controller_tcp_send(buf, len))
-    {
-        logger_service_log("MQTT Client: failed to send CONNECT");
-        return false;
-    }
+    return true;
 
-    // 3) Wait for CONNACK
-    int n = network_controller_tcp_receive(buf, sizeof(buf));
-    logger_service_log("MQTT Client: received %d bytes for CONNACK", n);
-    if (n <= 0)
-        return false;
+    // // 2) CONNECT packet
+    // size_t len = mqtt_controller_build_connect_packet(buf, sizeof(buf));
+    // if (len == 0 || !network_controller_tcp_send(buf, len))
+    // {
+    //     logger_service_log("MQTT Client: failed to send CONNECT");
+    //     return false;
+    // }
 
-    unsigned char rc1, rc2;
-    int rc = MQTTDeserialize_connack(&rc1, &rc2, buf, n);
-    logger_service_log("MQTT Client: CONNACK deserialize → %d, code=%u",
-                       rc, rc2);
-    return (rc == 1 && rc2 == 0);
+    // // 3) Wait for CONNACK
+    // int n = network_controller_tcp_receive(buf, sizeof(buf));
+    // logger_service_log("MQTT Client: received %d bytes for CONNACK", n);
+    // if (n <= 0)
+    //     return false;
+
+    // unsigned char rc1, rc2;
+    // int rc = MQTTDeserialize_connack(&rc1, &rc2, buf, n);
+    // logger_service_log("MQTT Client: CONNACK deserialize → %d, code=%u",
+    //                    rc, rc2);
+    // return (rc == 1 && rc2 == 0);
 }
 
 bool mqtt_client_subscribe(const char *topic)

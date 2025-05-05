@@ -36,49 +36,49 @@ static const mqtt_controller_config_t mqtt_cfg = {
 
 int main(void)
 {
-    // 1) Init your 1 ms tick
-    scheduler_init();
+  // 1) Init your 1 ms tick
+  scheduler_init();
 
-    // 2) Init other hardware/services
-    logger_service_init(9600);
+  // 2) Init other hardware/services
+  logger_service_init(9600);
 
-    logger_service_log("Wifi initialization");
-    wifi_service_init_best(my_nets, sizeof(my_nets) / sizeof(*my_nets));
+  logger_service_log("Wifi initialization");
+  wifi_service_init_best(my_nets, sizeof(my_nets) / sizeof(*my_nets));
 
-    logger_service_log("Sensor initialization");
-    sensor_service_init(SENSOR_READ_INTERVAL);
+  logger_service_log("Sensor initialization");
+  sensor_service_init(SENSOR_READ_INTERVAL);
 
-    logger_service_log("MQTT initialization");
-    mqtt_service_init("172.20.10.3", 1883, &mqtt_cfg);
+  logger_service_log("MQTT initialization");
+  mqtt_service_init("172.20.10.3", 1883, &mqtt_cfg);
 
-    logger_service_log("Telemetry initialization");
-    telemetry_service_init("plant/telemetry");
+  logger_service_log("Telemetry initialization");
+  telemetry_service_init("plant/telemetry");
 
-    logger_service_log("Command registration and initialization");
-    command_config_register_all();
+  logger_service_log("Command registration and initialization");
+  command_config_register_all();
 
-    // 3) Timestamp variables for each job
-    uint32_t last_sensor_read = 0;
-    uint32_t last_telemetry = 0;
+  // 3) Timestamp variables for each job
+  uint32_t last_sensor_read = 0;
+  uint32_t last_telemetry = 0;
 
-    logger_service_log("Starting the loop");
-    while (1)
+  logger_service_log("Starting the loop");
+  while (1)
+  {
+
+    wifi_service_poll();
+
+    // mqtt_service_poll();
+
+    // command_service_poll();
+
+    // sensor_service_poll();
+    //  telemetry_service_publish();
+
+    if (scheduler_elapsed(&last_telemetry, SENSOR_READ_INTERVAL))
     {
-
-        wifi_service_poll();
-
-        // mqtt_service_poll();
-
-        command_service_poll();
-
-        // sensor_service_poll();
-        // telemetry_service_publish();
-
-        if (scheduler_elapsed(&last_telemetry, SENSOR_READ_INTERVAL))
-        {
-            telemetry_service_publish();
-            // logger_service_log("Telemetry sent");
-            scheduler_mark(&last_telemetry);
-        }
+      telemetry_service_publish();
+      // logger_service_log("Telemetry sent");
+      scheduler_mark(&last_telemetry);
     }
+  }
 }
