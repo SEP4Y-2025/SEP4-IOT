@@ -28,36 +28,34 @@ int main(void)
     logger_service_log("Sensor initialization");
     sensor_service_init(SENSOR_READ_INTERVAL);
 
-    logger_service_log("MQTT initialization");
-    telemetry_service_init(
+    mqtt_service_init(
         "192.168.120.58",  // broker IP
         1883,              // broker port
-        "pot_1",      // MQTT client ID
-        "sensor/telemetry" // topic
-    );
-
-    mqtt_service_init();
+        "pot_1"      // MQTT client ID    
+        );
     logger_service_log("MQTT service initialized");
 
-    
+    logger_service_log("Telemetry initialization");
+    telemetry_service_init();
+
     // 3) Timestamp variables for each job
     uint32_t last_sensor_read = 0;
     uint32_t last_telemetry = 0;
 
     logger_service_log("Starting the loop");
-    mqtt_subscribe();
     while (1)
     {
 
         wifi_service_poll();
         mqtt_service_poll();
-        // sensor_service_poll();
-        telemetry_service_publish();
+        //sensor_service_poll();
+        //telemetry_service_publish();
 
-        if (scheduler_elapsed(&last_telemetry, SENSOR_READ_INTERVAL))
+        if (scheduler_elapsed(&last_telemetry, TELEMETRY_INTERVAL))
         {
             if (pot_service_is_enabled())
             {
+                sensor_service_poll();
                 telemetry_service_publish();
                 logger_service_log("Telemetry sent");
             }
