@@ -4,7 +4,7 @@
 #include "services/sensor_service.h"
 #include "services/logger_service.h"
 #include "controllers/network_controller.h"
-#include "controllers/mqtt_client.h"
+// #include "controllers/mqtt_client.h"
 #include "services/mqtt_service.h"
 // #include "services/command_config.h"
 // #include "services/command_service.h"
@@ -13,6 +13,7 @@
 
 #include <avr/io.h>
 #include <avr/wdt.h>
+#include <stddef.h>
 // #include "controllers/sensor_controller.h"
 //  … other includes …
 
@@ -41,7 +42,7 @@ int main(void)
   sensor_service_init(SENSOR_READ_INTERVAL);
 
   logger_service_log("MQTT initialization");
-  mqtt_service_init("172.20.10.3", 1883, NULL, &mqtt_cfg);
+  mqtt_service_init("172.20.10.3", 1883, &mqtt_cfg, NULL);
 
   logger_service_log("Telemetry initialization");
   telemetry_service_init("plant/telemetry");

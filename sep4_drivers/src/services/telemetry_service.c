@@ -21,7 +21,7 @@ void telemetry_service_init(const char *topic)
 void telemetry_service_poll(void)
 {
     // give the MQTT layer a chance to process incoming packets
-    mqtt_service_poll();
+    // mqtt_service_poll();
 }
 
 bool telemetry_service_publish(void)
