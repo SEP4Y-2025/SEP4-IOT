@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 /**
  * Configuration for MQTT connection parameters.
@@ -55,5 +56,12 @@ size_t mqtt_controller_build_disconnect_packet(
     unsigned char *buf,
     size_t         buflen
 );
+
+size_t mqtt_controller_build_ping_packet(unsigned char *buf, size_t bufsize);
+
+bool mqtt_controller_handle_connack(const unsigned char *buf, size_t buflen);
+
+typedef void (*mqtt_connack_callback_t)(void);
+void mqtt_controller_set_connack_callback(mqtt_connack_callback_t cb);
 
 #endif // MQTT_CONTROLLER_H

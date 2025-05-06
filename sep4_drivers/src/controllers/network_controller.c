@@ -51,6 +51,7 @@ bool network_controller_is_ap_connected(void) {
     return ok;
 }
 
+
 bool network_controller_tcp_open(const char *ip, uint16_t port) {
     bool ok = (wifi_command_create_TCP_connection(
                     (char*)ip, port, internal_tcp_cb,
@@ -71,3 +72,5 @@ bool network_controller_tcp_send(const uint8_t *data, uint16_t len) {
 bool network_controller_tcp_close(void) {
     return (wifi_command_close_TCP_connection() == WIFI_OK);
 }
+
+
