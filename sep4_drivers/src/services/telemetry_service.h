@@ -15,10 +15,7 @@
  * @param client_id    MQTT client identifier
  * @param topic        MQTT topic to PUBLISH telemetry on
  */
-void telemetry_service_init(const char   *broker_ip,
-                            uint16_t      broker_port,
-                            const char   *client_id,
-                            const char   *topic);
+void telemetry_service_init(void);
 
 /**
  * @brief  Poll the background TCP path.  
