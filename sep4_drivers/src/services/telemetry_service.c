@@ -63,6 +63,7 @@ bool telemetry_service_publish(void) {
         return false;
     }
 
-    return mqtt_service_publish(svc_topic, (uint8_t *)_json_buf, jlen);
+    // return mqtt_service_publish(svc_topic, (uint8_t *)_json_buf, jlen);
+    return true;
 }
 

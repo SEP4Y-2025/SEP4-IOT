@@ -20,7 +20,7 @@
 #include <stdlib.h>
 //  … other includes …
 
-static unsigned char callback_buff[256];
+static char callback_buff[256];
 
 void mqtt_event_cb()
 {
@@ -55,9 +55,7 @@ void mqtt_event_cb()
         unsigned char *payload = NULL;
         int payloadlen = 0;
 
-        int result = MQTTDeserialize_publish(&dup, &qos, &retained, &packetid,
-                                             &topicName, &payload, &payloadlen,
-                                             callback_buff, 256);
+        int result = MQTTDeserialize_publish(&dup, &qos, &retained, &packetid, &topicName, &payload, &payloadlen, (unsigned char*)callback_buff, 256);
 
         if (result == 1)
         {
@@ -143,7 +141,7 @@ int main(void)
     }
 
     MQTTString topic2 = MQTTString_initializer;
-    topic.cstring = "/pot_1/deactivate";
+    topic2.cstring = "/pot_1/deactivate";
 
     WIFI_ERROR_MESSAGE_t subscribe_message2 = mqtt_subscribe_to_topic(topic2);
     if (subscribe_message2 != WIFI_OK)

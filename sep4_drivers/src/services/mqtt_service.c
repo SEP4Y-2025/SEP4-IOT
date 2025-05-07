@@ -1,9 +1,12 @@
 #include "MQTTPacket.h"
 #include <string.h>
 #include "wifi.h"
+#include "services/logger_service.h"
+#include "services/mqtt_service.h"
 
 size_t create_mqtt_connect_packet(unsigned char *buf, size_t buflen)
 {
+  logger_service_log("Creating MQTT Connect packet...\n");
   MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
   size_t len = 0;
 
@@ -41,7 +44,9 @@ size_t create_mqtt_disconnect_packet(unsigned char *buf, size_t buflen)
 
 WIFI_ERROR_MESSAGE_t mqtt_subscribe_to_topic(MQTTString topic)
 {
-    uint8_t buffer[128];
+    logger_service_log("Trying to subscribe to  topic: %s\n", topic.cstring);
+
+  uint8_t buffer[128];
 
   uint16_t packetId = 1; // Can be incremented if you send multiple subscriptions
   int qos = 1;           // QoS level 1 (as expected)
@@ -50,6 +55,9 @@ WIFI_ERROR_MESSAGE_t mqtt_subscribe_to_topic(MQTTString topic)
   if (len <= 0)
     return WIFI_FAIL;
 
+    packetId++; // Increment packet ID for next subscription
+
   // Send the subscribe packet over TCP
+  logger_service_log("Sending subscribe packet: %d\n", len);
   return wifi_command_TCP_transmit(buffer, len);
 }

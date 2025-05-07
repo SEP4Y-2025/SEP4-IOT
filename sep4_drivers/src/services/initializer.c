@@ -32,42 +32,42 @@ void initialize_system(void)
     telemetry_service_init();
 }
 
-WIFI_ERROR_MESSAGE_t setup_network_connection(char *ssid, char *password, char *broker_ip, uint16_t broker_port, void (*callback)(void), unsigned char *callback_buffer)
+WIFI_ERROR_MESSAGE_t setup_network_connection(char *ssid, char *password, char *broker_ip, uint16_t broker_port, void (*callback)(void), char *callback_buffer)
 {
 
     logger_service_log("Connecting to WiFi...\n");
     // initialize the wifi module
-    // wifi_init();
+    wifi_init();
 
-    // // disable echo, set station mode, single-conn
-    // if (wifi_command_disable_echo() != WIFI_OK)
-    //     return -1;
-    // if (wifi_command_set_mode_to_1() != WIFI_OK)
-    //     return -1;
-    // if (wifi_command_set_to_single_Connection() != WIFI_OK)
-    //     return -1;
-    // // connect to wifi
-    // WIFI_ERROR_MESSAGE_t wifi_res = wifi_command_join_AP(ssid, password);
+    // disable echo, set station mode, single-conn
+    if (wifi_command_disable_echo() != WIFI_OK)
+        return -1;
+    if (wifi_command_set_mode_to_1() != WIFI_OK)
+        return -1;
+    if (wifi_command_set_to_single_Connection() != WIFI_OK)
+        return -1;
+    // connect to wifi
+    WIFI_ERROR_MESSAGE_t wifi_res = wifi_command_join_AP(ssid, password);
 
-    // // Log result of WiFi connection
-    // char wifi_res_msg[128];
-    // sprintf(wifi_res_msg, "Error: %d \n", wifi_res);
-    // logger_service_log(wifi_res_msg);
+    // Log result of WiFi connection
+    char wifi_res_msg[128];
+    sprintf(wifi_res_msg, "Error: %d \n", wifi_res);
+    logger_service_log(wifi_res_msg);
 
-    // if (wifi_res != WIFI_OK)
-    // {
-    //     logger_service_log("Error connecting to WiFi!\n");
-    //     return -1;
-    // }
-    // else
-    // {
-    //     logger_service_log("Connected to WiFi!\n");
-    // }
+    if (wifi_res != WIFI_OK)
+    {
+        logger_service_log("Error connecting to WiFi!\n");
+        return -1;
+    }
+    else
+    {
+        logger_service_log("Connected to WiFi!\n");
+    }
 
-    wifi_service_init(ssid, password);
+    //wifi_service_init(ssid, password);
 
     // connect to tcp server
-    wifi_command_create_TCP_connection(broker_ip, broker_port, callback, (unsigned char *)callback_buffer);
+    wifi_command_create_TCP_connection(broker_ip, broker_port, callback, callback_buffer);
 
     // Create and send MQTT connect packet
     unsigned char connect_buf[200];
