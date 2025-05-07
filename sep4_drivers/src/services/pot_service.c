@@ -6,9 +6,10 @@
 #include "controllers/network_controller.h"
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
+#include "services/device_config.h"
 
 static bool telemetry_enabled = false;
-
 
 void pot_service_init(void) {
 }
@@ -19,23 +20,29 @@ bool pot_service_is_enabled(void) {
 
 void pot_service_handle_activate(const char *topic, const uint8_t *payload, uint16_t len) {
     telemetry_enabled = true;
-    logger_service_log("Pot 1 ACTIVATED");
+    logger_service_log("Pot ACTIVATED");
 
     const char *ack = "{\"status\":\"ok\"}";
 
     unsigned char buffer[128];
 
-    mqtt_service_publish("/pot_1/activate/ok", (const uint8_t *)ack, buffer, sizeof(buffer));
+    char response_topic[64];
+    snprintf(response_topic, sizeof(response_topic), "%s/ok", topic);
+
+    mqtt_service_publish(response_topic, (const uint8_t *)ack, buffer, sizeof(buffer));
 }
 
 void pot_service_handle_deactivate(const char *topic, const uint8_t *payload, uint16_t len) {
     telemetry_enabled = false;
-    logger_service_log("Pot 1 DEACTIVATED");
 
-    
+    logger_service_log("Pot DEACTIVATED");
+
     const char *ack = "{\"status\":\"ok\"}";
 
     unsigned char buffer[128];
 
-    mqtt_service_publish("/pot_1/deactivate/ok", (const uint8_t *)ack, buffer, sizeof(buffer));
+    char response_topic[64];
+    snprintf(response_topic, sizeof(response_topic), "%s/ok", topic);
+
+    mqtt_service_publish(response_topic, (const uint8_t *)ack, buffer, sizeof(buffer));
 }

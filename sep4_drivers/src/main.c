@@ -17,13 +17,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <wifi.h>
+#include "services/device_config.h"
 
 int main(void)
 {
     initialize_system();
     logger_service_log("Initialization complete.\n");
 
-    if (setup_network_connection("Betelgeuse", "Hello World", "192.168.120.58", 1883,mqtt_event_cb, callback_buff) != WIFI_OK)
+    if (setup_network_connection("Betelgeuse", "Hello World", "192.168.120.58", 1883, mqtt_event_cb, callback_buff) != WIFI_OK)
     {
         logger_service_log("Error setting up network connection!\n");
         return -1;

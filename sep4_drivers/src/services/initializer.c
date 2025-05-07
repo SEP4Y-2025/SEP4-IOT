@@ -4,13 +4,13 @@
 #include "services/logger_service.h"
 #include "services/sensor_service.h"
 #include "services/mqtt_service.h"
-//#include "controllers/network_controller.h"
 #include "scheduler.h"
 #include "wifi.h"
 #include <stdio.h>
 #include <string.h>
 #include "stdbool.h"
 #include <stdint.h>
+#include "services/device_config.h"
 
 #define SENSOR_READ_INTERVAL 2000 // read sensors every 2 s
 #define TELEMETRY_INTERVAL 60000  // publish once a minute

@@ -4,11 +4,7 @@
 #include "services/logger_service.h"
 #include "services/mqtt_service.h"
 #include "services/pot_service.h"
-
-#define NUM_TOPICS 2
-static const char *mqtt_topic_strings[NUM_TOPICS] = {
-    "/pot_1/activate",
-    "/pot_1/deactivate"};
+#include "services/device_config.h"
 
 char callback_buff[256];
 
@@ -70,15 +66,17 @@ void mqtt_event_cb()
       logger_service_log(msg_buf);
 
       // Check for topic
-      if (strcmp(topic, "/pot_1/activate") == 0)
+      if (strcmp(topic, MQTT_TOPIC_ACTIVATE) == 0)
       {
         logger_service_log("Command received: Activate pot\n");
         pot_service_handle_activate(topic, payload, payloadlen);
       }
-      else if (strcmp(topic, "/pot_1/deactivate") == 0)
+      else if (strcmp(topic, MQTT_TOPIC_DEACTIVATE) == 0)
       {
         logger_service_log("Command received: Deactivate pot\n");
+        pot_service_handle_deactivate(topic, payload, payloadlen);
       }
+      // TODO: add more handler functions here
       else
       {
         logger_service_log("Unknown topic received\n");
@@ -95,7 +93,7 @@ void mqtt_event_cb()
     logger_service_log("RECEIVED SUBACK\n");
     break;
 
-  default:
+  default: // Not interesting
     sprintf(msg_buf, "Unhandled packet type: %d\n", packet_type);
     logger_service_log(msg_buf);
   }
@@ -128,7 +126,7 @@ size_t create_mqtt_connect_packet(unsigned char *buf, size_t buflen)
   MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
   size_t len = 0;
 
-  data.clientID.cstring = "pot_1";
+  data.clientID.cstring = DEVICE_ID;
   data.keepAliveInterval = 20;
   data.cleansession = 1;
   data.MQTTVersion = 3;
@@ -139,7 +137,7 @@ size_t create_mqtt_connect_packet(unsigned char *buf, size_t buflen)
 
 // Function to create and serialize the MQTT publish packet
 WIFI_ERROR_MESSAGE_t mqtt_service_publish(char *topic, unsigned char *payload,
-                            unsigned char *buf, size_t buflen)
+                                          unsigned char *buf, size_t buflen)
 {
   MQTTString topicString = MQTTString_initializer;
   size_t payloadlen = strlen((char *)payload);
