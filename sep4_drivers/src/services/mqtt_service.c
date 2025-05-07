@@ -4,6 +4,26 @@
 #include "services/logger_service.h"
 #include "services/mqtt_service.h"
 
+int mqtt_send_pingreq(void)
+{
+    unsigned char buf[10];
+    int len = MQTTSerialize_pingreq(buf, sizeof(buf));
+
+    if (len <= 0)
+    {
+        logger_service_log("Failed to serialize PINGREQ\n");
+        return -1;
+    }
+
+    if (wifi_command_TCP_transmit(buf, len) != WIFI_OK)
+    {
+        logger_service_log("Failed to send PINGREQ\n");
+        return -1;
+    }
+
+    logger_service_log("Sent MQTT PINGREQ\n");
+    return 0;
+}
 
 size_t create_mqtt_connect_packet(unsigned char *buf, size_t buflen)
 {

@@ -16,6 +16,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <wifi.h>
 
 static char callback_buff[256];
 
@@ -52,7 +53,7 @@ void mqtt_event_cb()
         unsigned char *payload = NULL;
         int payloadlen = 0;
 
-        int result = MQTTDeserialize_publish(&dup, &qos, &retained, &packetid, &topicName, &payload, &payloadlen, (unsigned char*)callback_buff, 256);
+        int result = MQTTDeserialize_publish(&dup, &qos, &retained, &packetid, &topicName, &payload, &payloadlen, (unsigned char *)callback_buff, 256);
 
         if (result == 1)
         {
@@ -107,6 +108,15 @@ void mqtt_event_cb()
     }
 }
 
+void wifi_service_poll(void)
+{
+    int len = wifi_command_TCP_receive((uint8_t *)callback_buff, sizeof(callback_buff));
+    if (len > 0)
+    {
+        // Handle received MQTT packet
+        mqtt_event_cb();
+    }
+}
 
 int main(void)
 {
@@ -150,11 +160,21 @@ int main(void)
         logger_service_log("Sent subscribe packet!\n");
     }
 
-    //periodic_task_init_a(loop, 2000);
-
+    // periodic_task_init_a(loop, 2000);
+    // Keep-alive logic
+    uint32_t last_ping_ms = scheduler_millis();
     while (1)
     {
+        //wifi_service_poll(); // Poll Wi-Fi and MQTT
+
+        if (scheduler_elapsed(&last_ping_ms, 10000)) // Every 10 seconds
+        {
+            mqtt_send_pingreq(); // Send MQTT keep-alive
+            scheduler_mark(&last_ping_ms);
+        }
+        _delay_ms(10);
     }
+    logger_service_log("Exiting main loop.\n");
 
     return 0;
 }
