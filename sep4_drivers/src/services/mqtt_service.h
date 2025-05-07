@@ -6,7 +6,9 @@
 #include "wifi.h"
 #include "MQTTPacket.h"
 
+void mqtt_event_cb();
 int mqtt_send_pingreq(void);
+void subscribe_to_all_topics(void);
 size_t create_mqtt_connect_packet(unsigned char *buf, size_t buflen);
 size_t create_mqtt_transmit_packet(char *topic, unsigned char *payload,
                                    unsigned char *buf, size_t buflen);
