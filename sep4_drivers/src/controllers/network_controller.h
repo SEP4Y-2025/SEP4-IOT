@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "wifi.h"
 
 /**
  * @brief Callback invoked when TCP data arrives.
@@ -24,13 +25,15 @@ void network_controller_init(void);
  */
 bool network_controller_setup(void);
 
-/**
- * @brief Join the given WiFi network (blocking).
- * @param ssid     Null-terminated SSID string.
- * @param password Null-terminated password string.
- * @return true on success, false on failure.
- */
-bool network_controller_connect_ap(const char *ssid, const char *password);
+// /**
+//  * @brief Join the given WiFi network (blocking).
+//  * @param ssid     Null-terminated SSID string.
+//  * @param password Null-terminated password string.
+//  * @return true on success, false on failure.
+//  */
+// bool network_controller_connect_ap(const char *ssid, const char *password);
+
+WIFI_ERROR_MESSAGE_t network_controller_connect_ap(char *ssid, char *password, char *broker_ip, uint16_t broker_port, void (*callback)(void), char *callback_buffer);
 
 /**
  * @brief Leave the current WiFi network.

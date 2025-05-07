@@ -4,6 +4,7 @@
 #include "services/logger_service.h"
 #include "services/mqtt_service.h"
 
+
 size_t create_mqtt_connect_packet(unsigned char *buf, size_t buflen)
 {
   logger_service_log("Creating MQTT Connect packet...\n");

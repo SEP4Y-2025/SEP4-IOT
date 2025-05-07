@@ -9,16 +9,13 @@
 #include "MQTTPacket.h"
 #include <util/delay.h>
 #include <string.h>
-
 #include "services/mqtt_service.h"
 #include "services/pot_service.h"
-
 #include <avr/interrupt.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-//  … other includes …
 
 static char callback_buff[256];
 
@@ -110,10 +107,10 @@ void mqtt_event_cb()
     }
 }
 
+
 int main(void)
 {
     initialize_system();
-
     logger_service_log("Initialization complete.\n");
 
     if (setup_network_connection("Betelgeuse", "Hello World", "192.168.120.58", 1883,
@@ -127,11 +124,11 @@ int main(void)
 
     _delay_ms(5000);
 
-    MQTTString topic = MQTTString_initializer;
-    topic.cstring = "/pot_1/activate";
+    MQTTString activateTopic = MQTTString_initializer;
+    activateTopic.cstring = "/pot_1/activate";
 
-    WIFI_ERROR_MESSAGE_t subscribe_message = mqtt_subscribe_to_topic(topic);
-    if (subscribe_message != WIFI_OK)
+    WIFI_ERROR_MESSAGE_t subscribeActivateTopicMessage = mqtt_subscribe_to_topic(activateTopic);
+    if (subscribeActivateTopicMessage != WIFI_OK)
     {
         logger_service_log("Unable to send subscribe packet!\n");
     }
@@ -140,11 +137,11 @@ int main(void)
         logger_service_log("Sent subscribe packet!\n");
     }
 
-    MQTTString topic2 = MQTTString_initializer;
-    topic2.cstring = "/pot_1/deactivate";
+    MQTTString deactivateTopic = MQTTString_initializer;
+    deactivateTopic.cstring = "/pot_1/deactivate";
 
-    WIFI_ERROR_MESSAGE_t subscribe_message2 = mqtt_subscribe_to_topic(topic2);
-    if (subscribe_message2 != WIFI_OK)
+    WIFI_ERROR_MESSAGE_t subscribeDeactivateTopicMessage = mqtt_subscribe_to_topic(deactivateTopic);
+    if (subscribeDeactivateTopicMessage != WIFI_OK)
     {
         logger_service_log("Unable to send subscribe packet!\n");
     }

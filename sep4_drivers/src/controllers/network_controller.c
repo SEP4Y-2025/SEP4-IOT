@@ -1,8 +1,9 @@
 // src/controllers/network_controller.c
 #include "controllers/network_controller.h"
 #include "services/logger_service.h"
-#include "wifi.h"    // your existing wifi_command_* APIs :contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1}
+#include "wifi.h"
 #include <string.h>
+#include <stdio.h>
 
 /// Store user’s TCP callback and internal buffer
 static Network_TCP_Callback_t user_cb = NULL;
@@ -32,11 +33,11 @@ bool network_controller_setup(void) {
     return true;
 }
 
-bool network_controller_connect_ap(const char *ssid, const char *password) {
-    bool ok = (wifi_command_join_AP((char*)ssid, (char*)password) == WIFI_OK);
-    logger_service_log("AT+CWJAP \"%s\": %s", ssid, ok ? "OK" : "FAIL");
-    return ok;
-}
+// bool network_controller_connect_ap(const char *ssid, const char *password) {
+//     bool ok = (wifi_command_join_AP((char*)ssid, (char*)password) == WIFI_OK);
+//     logger_service_log("AT+CWJAP \"%s\": %s", ssid, ok ? "OK" : "FAIL");
+//     return ok;
+// }
 
 bool network_controller_disconnect_ap(void) {
     return (wifi_command_quit_AP() == WIFI_OK);
@@ -73,4 +74,44 @@ bool network_controller_tcp_close(void) {
     return (wifi_command_close_TCP_connection() == WIFI_OK);
 }
 
+WIFI_ERROR_MESSAGE_t network_controller_connect_ap(char *ssid, char *password, char *broker_ip, uint16_t broker_port, void (*callback)(void), char *callback_buffer) {
+    // connect to wifi
+    WIFI_ERROR_MESSAGE_t wifi_res = wifi_command_join_AP(ssid, password);
 
+    // Log result of WiFi connection
+    char wifi_res_msg[128];
+    sprintf(wifi_res_msg, "Error: %d \n", wifi_res);
+    logger_service_log(wifi_res_msg);
+
+    if (wifi_res != WIFI_OK)
+    {
+        logger_service_log("Error connecting to WiFi!\n");
+        return wifi_res;
+    }
+    else
+    {
+        logger_service_log("Connected to WiFi!\n");
+    }
+
+    wifi_command_create_TCP_connection(broker_ip, broker_port, callback, callback_buffer);
+
+    // Create and send MQTT connect packet
+    unsigned char connect_buf[200];
+    int connect_buflen = sizeof(connect_buf);
+    int connect_len = create_mqtt_connect_packet(connect_buf, connect_buflen);
+
+    if (connect_len > 0)
+    {
+        logger_service_log("MQTT Connect packet created!\n");
+    }
+
+    WIFI_ERROR_MESSAGE_t mqtt_res = wifi_command_TCP_transmit(connect_buf, connect_len);
+
+    if (mqtt_res != WIFI_OK)
+    {
+        logger_service_log("Error sending MQTT Connect packet!\n");
+        return mqtt_res;
+    }
+
+    return WIFI_OK;
+}
