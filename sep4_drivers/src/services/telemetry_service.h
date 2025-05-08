@@ -8,13 +8,7 @@
 
 /**
  * @brief  Configure the telemetry service.
- *         Does not open the socket yet.
- *
- * @param broker_ip    Null-terminated broker IP or hostname
- * @param broker_port  TCP port (usually 1883)
- * @param client_id    MQTT client identifier
- * @param topic        MQTT topic to PUBLISH telemetry on
- */
+ * */
 void telemetry_service_init(void);
 
 /**

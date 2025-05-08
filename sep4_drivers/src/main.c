@@ -4,13 +4,13 @@
 #include "services/sensor_service.h"
 #include "services/initializer.h"
 #include "services/logger_service.h"
+#include "services/mqtt_service.h"
+#include "services/pot_service.h"
 #include <avr/io.h>
 #include <avr/wdt.h>
 #include "MQTTPacket.h"
 #include <util/delay.h>
 #include <string.h>
-#include "services/mqtt_service.h"
-#include "services/pot_service.h"
 #include <avr/interrupt.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -38,13 +38,23 @@ int main(void)
     // periodic_task_init_a(loop, 2000);
     // Keep-alive logic
     uint32_t last_ping_ms = scheduler_millis();
+    uint32_t last_telemetry_ms = scheduler_millis();
     while (1)
     {
-
         if (scheduler_elapsed(&last_ping_ms, 15000)) // Every 15 seconds
         {
             mqtt_send_pingreq(); // Send MQTT keep-alive
             scheduler_mark(&last_ping_ms);
+        }
+
+        if (pot_service_is_enabled() && scheduler_elapsed(&last_telemetry_ms, 10000))
+        {
+            logger_service_log("Attempting to publish telemetry\n");
+            bool success = telemetry_service_publish(); // Publish telemetry data
+            if (!success) {
+                logger_service_log("Telemetry publish returned false\n");
+            }
+            else scheduler_mark(&last_telemetry_ms);
         }
         _delay_ms(10);
     }

@@ -5,13 +5,13 @@
 #include "controllers/network_controller.h"
 #include "services/wifi_service.h"
 #include "services/mqtt_service.h"
-//#include "controllers/mqtt_controller.h"
 #include <string.h>
 #include <stdio.h>
+#include "services/device_config.h"
+#include "services/logger_service.h"
 
 #define JSON_BUF_SIZE 128
 static char _json_buf[JSON_BUF_SIZE];
-static const char *svc_topic ="sensor/telemetry";
 
 /// State flag: have we already done the CONNECT?
 //static bool       svc_mqtt_connected = false;
@@ -33,12 +33,7 @@ void telemetry_service_poll(void) {
 }
 
 bool telemetry_service_publish(void) {
-    // 1) Ensure Wi-Fi is up
-    if (!wifi_service_is_connected()) {
-        return false;
-    }
 
-    // 3) Read latest sensors
     sensor_controller_poll();
     uint8_t hum_i = sensor_controller_get_humidity_integer();
     uint8_t hum_d = sensor_controller_get_humidity_decimal();
@@ -47,23 +42,39 @@ bool telemetry_service_publish(void) {
     uint16_t light = sensor_controller_get_light();
     uint8_t soil   = sensor_controller_get_soil();
 
-    // 4) Format JSON payload without floats
+    logger_service_log("Telemetry: %u.%u %u.%u %u %u\n", tmp_i, tmp_d, hum_i, hum_d, light, soil);
+
+    // Format JSON payload without floats
     //    e.g. {"temperature":27.8,"humidity":33.0,"light":502,"soil":123}
     int jlen = snprintf(_json_buf, sizeof(_json_buf),
         "{\"temperature\":%u.%u,"
-        "\"humidity\":%u.%u,"
-        "\"light\":%u,"
-        "\"soil\":%u}",
+        "\"air_humidity\":%u.%u,"
+        "\"light_intensity\":%u,"
+        "\"soil_humidity\":%u,"
+        "\"plant_pot_id\":\"%s\"}",
         (unsigned)tmp_i, (unsigned)tmp_d,
         (unsigned)hum_i, (unsigned)hum_d,
         (unsigned)light,
-        (unsigned)soil
+        (unsigned)soil, DEVICE_ID
     );
-    if (jlen <= 0) {
+    if (jlen <= 0 || jlen >= sizeof(_json_buf)) {
         return false;
     }
 
-    // return mqtt_service_publish(svc_topic, (uint8_t *)_json_buf, jlen);
+    logger_service_log("New telemetry is build...\n");
+
+    unsigned char buffer[128];
+
+    logger_service_log("Telemetry JSON payload: %s\n", _json_buf);
+
+    WIFI_ERROR_MESSAGE_t result = mqtt_service_publish(MQTT_TOPIC_AUTOMATIC_READINGS, (unsigned char *)_json_buf, buffer, sizeof(buffer));
+
+    if (result != WIFI_OK) {
+        logger_service_log("Telemetry publish failed\n");
+        return false;
+    }
+
+    logger_service_log("Telemetry published successfully\n");
     return true;
 }
 

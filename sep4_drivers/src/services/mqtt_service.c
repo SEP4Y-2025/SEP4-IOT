@@ -22,8 +22,6 @@ void mqtt_event_cb()
 
   // Print packet type
   char msg_buf[250];
-  sprintf(msg_buf, "MQTT packet received - Type: %d\n", packet_type);
-  logger_service_log(msg_buf);
 
   switch (packet_type)
   {
@@ -91,6 +89,10 @@ void mqtt_event_cb()
 
   case 9: // MQTT SUBACK
     logger_service_log("RECEIVED SUBACK\n");
+    break;
+
+  case 13: // MQTT PINGRESP
+    logger_service_log("RECEIVED PINGRESP\n");
     break;
 
   default: // Not interesting
