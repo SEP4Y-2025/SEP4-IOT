@@ -4,7 +4,8 @@
 #include "services/logger_service.h"
 #include "services/mqtt_service.h"
 #include "services/pot_service.h"
-#include "services/device_config.h"
+#include "config/device_config.h"
+#include "config/topics_config.h"
 
 char callback_buff[256];
 
@@ -74,6 +75,11 @@ void mqtt_event_cb()
         logger_service_log("Command received: Deactivate pot\n");
         pot_service_handle_deactivate(topic, payload, payloadlen);
       }
+      else if (strcmp(topic, MQTT_TOPIC_GET_DATA) == 0)
+      {
+        logger_service_log("Command received: Get pot data\n");
+        pot_service_handle_get_pot_data(topic, payload, payloadlen);
+      }
       // TODO: add more handler functions here
       else
       {
@@ -88,11 +94,11 @@ void mqtt_event_cb()
   }
 
   case 9: // MQTT SUBACK
-    logger_service_log("RECEIVED SUBACK\n");
+    //logger_service_log("RECEIVED SUBACK\n");
     break;
 
   case 13: // MQTT PINGRESP
-    logger_service_log("RECEIVED PINGRESP\n");
+    //logger_service_log("RECEIVED PINGRESP\n");
     break;
 
   default: // Not interesting
