@@ -10,7 +10,7 @@
 #include <string.h>
 #include "stdbool.h"
 #include <stdint.h>
-#include "services/device_config.h"
+#include "config/device_config.h"
 
 #define SENSOR_READ_INTERVAL 2000 // read sensors every 2 s
 #define TELEMETRY_INTERVAL 60000  // publish once a minute

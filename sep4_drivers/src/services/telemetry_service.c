@@ -7,7 +7,8 @@
 #include "services/mqtt_service.h"
 #include <string.h>
 #include <stdio.h>
-#include "services/device_config.h"
+#include "config/device_config.h"
+#include "config/topics_config.h"
 #include "services/logger_service.h"
 
 #define JSON_BUF_SIZE 128
