@@ -1,4 +1,3 @@
-// services/telemetry_service.c
 
 #include "services/telemetry_service.h"
 #include "controllers/sensor_controller.h"

@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdbool.h>
 
-// Call this with your payload string
 bool parse_watering_payload(const char *payload, uint32_t *frequency, uint32_t *dosage) {
     const char *freq_key = "\"watering_frequency\":";
     const char *dosage_key = "\"water_dosage\":";

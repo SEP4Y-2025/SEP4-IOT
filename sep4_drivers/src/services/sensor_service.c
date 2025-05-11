@@ -1,7 +1,7 @@
-// services/sensor_service.c
+
 #include "services/sensor_service.h"
 #include "controllers/sensor_controller.h"
-#include "scheduler.h"      // your millisecond scheduler
+#include "scheduler.h"      
 #include "services/logger_service.h"
 
 static uint32_t  _interval;

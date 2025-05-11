@@ -1,4 +1,3 @@
-// services/sensor_service.h
 #ifndef SENSOR_SERVICE_H
 #define SENSOR_SERVICE_H
 
@@ -28,4 +27,4 @@ uint8_t   sensor_service_get_humidity_decimal(void);
 uint16_t sensor_service_get_light(void);
 uint16_t sensor_service_get_soil(void);
 
-#endif // SENSOR_SERVICE_H
+#endif 

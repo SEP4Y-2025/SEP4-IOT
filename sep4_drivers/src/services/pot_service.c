@@ -1,7 +1,6 @@
 #include "services/pot_service.h"
 #include "services/logger_service.h"
 #include "services/telemetry_service.h"
-// #include "controllers/mqtt_controller.h"
 #include "services/mqtt_service.h"
 #include "controllers/network_controller.h"
 #include "controllers/sensor_controller.h"

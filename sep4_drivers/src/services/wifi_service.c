@@ -1,4 +1,3 @@
-// wifi_service.c (outline)
 
 #include "services/wifi_service.h"
 #include "controllers/network_controller.h"

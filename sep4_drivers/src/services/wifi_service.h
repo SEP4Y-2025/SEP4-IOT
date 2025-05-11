@@ -1,4 +1,3 @@
-// wifi_service.h
 
 #ifndef WIFI_SERVICE_H
 #define WIFI_SERVICE_H
@@ -27,4 +26,4 @@ WIFI_ERROR_MESSAGE_t wifi_service_connect(const char *s, const char *p, char *br
  */
 bool wifi_service_is_connected(void);
 
-#endif // WIFI_SERVICE_H
+#endif 

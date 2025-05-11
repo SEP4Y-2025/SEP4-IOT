@@ -1,4 +1,3 @@
-// services/telemetry_service.h
 
 #ifndef TELEMETRY_SERVICE_H
 #define TELEMETRY_SERVICE_H
@@ -28,4 +27,4 @@ void telemetry_service_poll(void);
  */
 void telemetry_service_publish(void);
 
-#endif // TELEMETRY_SERVICE_H
+#endif 
