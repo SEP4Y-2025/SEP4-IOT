@@ -4,7 +4,6 @@
 #define TELEMETRY_SERVICE_H
 
 #include <stdint.h>
-#include <stdbool.h>
 
 /**
  * @brief  Configure the telemetry service.
@@ -27,6 +26,6 @@ void telemetry_service_poll(void);
  *
  * @return true if the PUBLISH was sent (or scheduled) successfully.
  */
-bool telemetry_service_publish(void);
+void telemetry_service_publish(void);
 
 #endif // TELEMETRY_SERVICE_H

@@ -1,4 +1,3 @@
-// src/services/logger_service.c
 #include "services/logger_service.h"
 #include "controllers/pc_comm_controller.h"
 #include <stdarg.h>

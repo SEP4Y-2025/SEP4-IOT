@@ -98,7 +98,7 @@ WIFI_ERROR_MESSAGE_t network_controller_connect_ap(char *ssid, char *password, c
     // Create and send MQTT connect packet
     unsigned char connect_buf[200];
     int connect_buflen = sizeof(connect_buf);
-    int connect_len = create_mqtt_connect_packet(connect_buf, connect_buflen);
+    int connect_len = mqtt_service_create_mqtt_connect_packet(connect_buf, connect_buflen);
 
     if (connect_len > 0)
     {

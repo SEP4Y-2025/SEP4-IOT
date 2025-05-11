@@ -9,7 +9,7 @@
 
 char callback_buff[256];
 
-void mqtt_event_cb()
+void mqtt_service_event_callback()
 {
   // Check if we have valid data
   if (callback_buff[0] == 0)
@@ -107,7 +107,7 @@ void mqtt_event_cb()
   }
 }
 
-int mqtt_send_pingreq(void)
+void mqtt_service_send_pingreq(void)
 {
   unsigned char buf[10];
   int len = MQTTSerialize_pingreq(buf, sizeof(buf));
@@ -115,20 +115,19 @@ int mqtt_send_pingreq(void)
   if (len <= 0)
   {
     logger_service_log("Failed to serialize PINGREQ\n");
-    return -1;
+    return;
   }
 
   if (wifi_command_TCP_transmit(buf, len) != WIFI_OK)
   {
     logger_service_log("Failed to send PINGREQ\n");
-    return -1;
+    return;
   }
 
   logger_service_log("Sent MQTT PINGREQ\n");
-  return 0;
 }
 
-size_t create_mqtt_connect_packet(unsigned char *buf, size_t buflen)
+size_t mqtt_service_create_mqtt_connect_packet(unsigned char *buf, size_t buflen)
 {
   logger_service_log("Creating MQTT Connect packet...\n");
   MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
@@ -164,21 +163,21 @@ WIFI_ERROR_MESSAGE_t mqtt_service_publish(char *topic, unsigned char *payload,
 }
 
 // Function to create and serialize the MQTT disconnect packet
-size_t create_mqtt_disconnect_packet(unsigned char *buf, size_t buflen)
+size_t mqtt_service_create_mqtt_disconnect_packet(unsigned char *buf, size_t buflen)
 {
   size_t len = 0;
   len = MQTTSerialize_disconnect(buf, buflen);
   return len;
 }
 
-void subscribe_to_all_topics(void)
+void mqtt_service_subscribe_to_all_topics(void)
 {
   for (int i = 0; i < NUM_TOPICS; i++)
   {
     MQTTString topic = MQTTString_initializer;
     topic.cstring = (char *)mqtt_topic_strings[i];
 
-    WIFI_ERROR_MESSAGE_t result = mqtt_subscribe_to_topic(topic);
+    WIFI_ERROR_MESSAGE_t result = mqtt_service_subscribe_to_topic(topic);
 
     if (result != WIFI_OK)
     {
@@ -190,7 +189,7 @@ void subscribe_to_all_topics(void)
     }
   }
 }
-WIFI_ERROR_MESSAGE_t mqtt_subscribe_to_topic(MQTTString topic)
+WIFI_ERROR_MESSAGE_t mqtt_service_subscribe_to_topic(MQTTString topic)
 {
   logger_service_log("Trying to subscribe to  topic: %s\n", topic.cstring);
 

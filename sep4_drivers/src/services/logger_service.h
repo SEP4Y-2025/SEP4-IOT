@@ -1,4 +1,3 @@
-// src/services/logger_service.h
 #ifndef LOGGER_SERVICE_H
 #define LOGGER_SERVICE_H
 
@@ -16,4 +15,4 @@ void logger_service_init(uint32_t baudrate);
  */
 void logger_service_log(const char *fmt, ...);
 
-#endif // LOGGER_SERVICE_H
+#endif
