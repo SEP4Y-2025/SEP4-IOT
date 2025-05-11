@@ -50,7 +50,7 @@ int main(void)
             scheduler_mark(&last_ping_ms);
         }
 
-        if (pot_service_is_telemetry_enabled() && scheduler_elapsed(&last_telemetry_ms, 10000))
+        if (is_telemetry_enabled() && scheduler_elapsed(&last_telemetry_ms, 10000))
         {
             logger_service_log("Attempting to publish telemetry\n");
             bool success = telemetry_service_publish(); // Publish telemetry data

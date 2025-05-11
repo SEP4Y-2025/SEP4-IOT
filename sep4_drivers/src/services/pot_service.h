@@ -5,8 +5,6 @@
 #include <stdbool.h>
 
 void pot_service_init(void);
-bool pot_service_is_telemetry_enabled(void);
-bool pot_service_is_watering_enabled(void);
 void pot_service_handle_activate(const char *topic,
                             const uint8_t *payload,
                             uint16_t len);

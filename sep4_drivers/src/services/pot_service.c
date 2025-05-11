@@ -14,29 +14,18 @@
 #include "utils/json_parser.h"
 #include <avr/eeprom.h>
 
+
 #define JSON_BUF_SIZE 512
 static char _json_buf[JSON_BUF_SIZE];
-
-static bool telemetry_enabled = false;
-static bool watering_enabled = false;
 
 void pot_service_init(void)
 {
 }
 
-bool pot_service_is_telemetry_enabled(void)
-{
-    return telemetry_enabled;
-}
-
-bool pot_service_is_watering_enabled(void)
-{
-    return watering_enabled;
-}
-
 void pot_service_handle_activate(const char *topic, const uint8_t *payload, uint16_t len)
 {
-    telemetry_enabled = true;
+    set_telemetry_enabled(true);
+
     logger_service_log("Pot ACTIVATED");
 
     uint32_t frequency = 0, dosage = 0;
@@ -45,7 +34,7 @@ void pot_service_handle_activate(const char *topic, const uint8_t *payload, uint
         update_watering_settings(frequency, dosage);
         logger_service_log("Watering settings updated and saved to EEPROM");
         log_stored_watering_config();
-        watering_enabled = true;
+        set_watering_enabled(true);
     }
     else
     {
@@ -64,7 +53,8 @@ void pot_service_handle_activate(const char *topic, const uint8_t *payload, uint
 
 void pot_service_handle_deactivate(const char *topic, const uint8_t *payload, uint16_t len)
 {
-    telemetry_enabled = false;
+    set_telemetry_enabled(false);
+    set_watering_enabled(false);
 
     logger_service_log("Pot DEACTIVATED");
 
