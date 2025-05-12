@@ -33,7 +33,8 @@ void initializer_service_initialize_system(void)
     logger_service_log("Started telemetry initialization");
     telemetry_service_init();
 
-    if (initializer_service_setup_network_connection("Betelgeuse", "Hello World", "192.168.120.58", 1883, mqtt_service_event_callback, callback_buff) != WIFI_OK)
+    //if (initializer_service_setup_network_connection("Kamtjatka7", "8755444387", "10.11.12.71", 1883, mqtt_service_event_callback, callback_buff) != WIFI_OK)
+    if (initializer_service_setup_network_connection("MartyPartyPhone", "123456789", "172.20.10.2", 1883, mqtt_service_event_callback, callback_buff) != WIFI_OK)
     {
         logger_service_log("Error setting up network connection!\n");
         return;
