@@ -94,11 +94,11 @@ void mqtt_service_event_callback()
   }
 
   case 9: // MQTT SUBACK
-    //logger_service_log("RECEIVED SUBACK\n");
+    // logger_service_log("RECEIVED SUBACK\n");
     break;
 
   case 13: // MQTT PINGRESP
-    //logger_service_log("RECEIVED PINGRESP\n");
+    // logger_service_log("RECEIVED PINGRESP\n");
     break;
 
   default: // Not interesting
@@ -168,6 +168,32 @@ size_t mqtt_service_create_mqtt_disconnect_packet(unsigned char *buf, size_t buf
   size_t len = 0;
   len = MQTTSerialize_disconnect(buf, buflen);
   return len;
+}
+
+void mqtt_service_poll(void)
+{
+  // first, only do MQTT if the radio is up
+  if (!network_controller_is_ap_connected())
+  {
+    // nothing to do — Wi-Fi SM will reconnect eventually
+    return;
+  }
+
+  if (!mqtt_service_is_connected())
+  {
+    logger_service_log("MQTT: connecting…");
+    if (mqtt_service_connect() == MQTT_OK)
+    {
+      logger_service_log("MQTT: subscribe to topics");
+      mqtt_service_subscribe_to_all_topics();
+    }
+  }
+  else
+  {
+    // already connected → keep-alive ping
+    logger_service_log("MQTT: ping");
+    mqtt_service_send_pingreq();
+  }
 }
 
 void mqtt_service_subscribe_to_all_topics(void)

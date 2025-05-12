@@ -345,58 +345,24 @@ WIFI_ERROR_MESSAGE_t wifi_scan_APs(uint16_t timeout_s)
 
 // WIFI_ERROR_MESSAGE_t wifi_scan_APs(uint16_t timeout_s)
 // {
-
 //     wifi_clear_databuffer_and_index();
-//     // 1) send the CWLAP and collect into wifi_dataBuffer
 //     WIFI_ERROR_MESSAGE_t err = wifi_command("AT+CWLAP", timeout_s);
 //     if (err != WIFI_OK)
 //         return err;
 
-//     // 2) null-terminate
+//     // null-terminate buffer
 //     if (wifi_dataBufferIndex < WIFI_DATABUFFERSIZE)
-//     {
 //         wifi_dataBuffer[wifi_dataBufferIndex] = '\0';
-//     }
 //     else
-//     {
 //         wifi_dataBuffer[WIFI_DATABUFFERSIZE - 1] = '\0';
-//     }
 
-//     // 3) debug dump raw (optional)
-//     uart_send_string_blocking(USART_0,
-//                               "\r\n<--- RAW CWLAP START --->\r\n");
+//     // debug: dump the entire raw buffer
+//     uart_send_string_blocking(USART_0, "\r\n<--- RAW CWLAP START --->\r\n");
 //     uart_send_array_blocking(USART_0,
 //                              wifi_dataBuffer,
 //                              (uint16_t)wifi_dataBufferIndex);
-//     uart_send_string_blocking(USART_0,
-//                               "\r\n<--- RAW CWLAP END --->\r\n");
+//     uart_send_string_blocking(USART_0, "\r\n<--- RAW CWLAP END --->\r\n");
 
-//     // 4) parse each +CWLAP: line
-//     char *saveptr, *line = strtok_r((char *)wifi_dataBuffer, "\r\n", &saveptr);
-//     while (line)
-//     {
-//         if (strncmp(line, "+CWLAP:", 7) == 0)
-//         {
-//             char ssid[33] = {0};
-//             int rssi = 0;
-//             if (sscanf(line,
-//                        "+CWLAP:(%*d,\"%32[^\"]\",%d",
-//                        ssid, &rssi) == 2)
-//             {
-//                 char msg[64];
-//                 int len = snprintf(msg, sizeof(msg),
-//                                    "SSID: %s, RSSI: %d dBm\r\n",
-//                                    ssid, rssi);
-//                 uart_send_array_blocking(USART_0,
-//                                          (uint8_t *)msg,
-//                                          (uint16_t)len);
-//             }
-//         }
-//         line = strtok_r(NULL, "\r\n", &saveptr);
-//     }
-
-//     // 5) clear for next scan
-//     // wifi_clear_databuffer_and_index();
 //     return WIFI_OK;
 // }
 
