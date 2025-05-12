@@ -134,3 +134,5 @@ const char *wifi_get_scan_buffer(void);
 
 /** Return the length of that buffer (bytes). */
 uint16_t wifi_get_scan_buffer_len(void);
+
+WIFI_ERROR_MESSAGE_t wifi_command_CWJAP_status(void);

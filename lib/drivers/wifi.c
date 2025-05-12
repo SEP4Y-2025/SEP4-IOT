@@ -375,3 +375,9 @@ uint16_t wifi_get_scan_buffer_len(void)
 {
     return wifi_dataBufferIndex;
 }
+
+WIFI_ERROR_MESSAGE_t wifi_command_CWJAP_status(void)
+{
+    // This will fill wifi_dataBuffer[]
+    return wifi_command("AT+CWJAP?", 1);
+}

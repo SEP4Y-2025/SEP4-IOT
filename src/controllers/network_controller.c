@@ -190,14 +190,13 @@ bool network_controller_is_tcp_connected(void)
 
 bool network_controller_is_ap_connected(void)
 {
-    // send “AT” to check module alive/joined
-    WIFI_ERROR_MESSAGE_t res = wifi_command_AT();
-    if (res != WIFI_OK)
+    if (wifi_command_CWJAP_status() != WIFI_OK)
     {
-        // only log on failure to avoid log-spam
-        logger_service_log("AT check failed (disconnected), error=%d\n", res);
+        return false;
     }
-    return (res == WIFI_OK);
+
+    const char *buf = wifi_get_scan_buffer();
+    return (strstr(buf, "+CWJAP:") != NULL);
 }
 
 WIFI_ERROR_MESSAGE_t network_controller_tcp_open(const char *ip,
