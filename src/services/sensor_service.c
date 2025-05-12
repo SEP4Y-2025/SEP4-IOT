@@ -1,8 +1,6 @@
 
 #include "services/sensor_service.h"
 #include "controllers/sensor_controller.h"
-#include "scheduler.h"      
-#include "services/logger_service.h"
 
 void sensor_service_init() {
     sensor_controller_init();
