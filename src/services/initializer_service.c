@@ -14,7 +14,7 @@
 #include "services/pot_service.h"
 #include <util/delay.h>
 #include "config/topics_config.h"
-#include "config/watering_config.h"
+#include "state/watering_state.h"
 #include "services/watering_service.h"
 
 
@@ -43,7 +43,7 @@ void initializer_service_initialize_system(void)
 
     _delay_ms(5000);
     mqtt_service_subscribe_to_all_topics();
-    load_watering_config(); // Load watering settings from EEPROM
+    load_watering_state(); // Load watering settings from EEPROM
 
     scheduler_register(mqtt_service_send_pingreq, MQTT_PING_INTERVAL);          
     scheduler_register(telemetry_service_publish, TELEMETRY_PUBLISH_INTERVAL);     

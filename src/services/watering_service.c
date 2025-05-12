@@ -1,7 +1,7 @@
 #include "watering_service.h"
 #include "config/device_config.h"
 #include "services/logger_service.h"
-#include "config/watering_config.h"
+#include "state/watering_state.h"
 
 void watering_service_init(void)
 {
