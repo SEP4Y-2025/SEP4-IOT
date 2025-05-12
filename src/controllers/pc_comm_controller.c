@@ -1,6 +1,5 @@
-// src/controllers/pc_comm_controller.c
 #include "controllers/pc_comm_controller.h"
-#include "pc_comm.h"      // your existing driver
+#include "pc_comm.h" 
 
 void pc_comm_controller_init(uint32_t baudrate, pc_comm_callback_t cb) {
     pc_comm_init(baudrate, cb);

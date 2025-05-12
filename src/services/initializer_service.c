@@ -18,7 +18,6 @@
 #include "services/watering_service.h"
 
 
-#define SENSOR_READ_INTERVAL 2000
 #define MQTT_PING_INTERVAL 15000 
 #define TELEMETRY_PUBLISH_INTERVAL 10000 
 
@@ -28,7 +27,7 @@ void initializer_service_initialize_system(void)
     logger_service_init(9600);
 
     logger_service_log("Started sensor initialization");
-    sensor_service_init(SENSOR_READ_INTERVAL);
+    sensor_service_init();
 
     logger_service_log("Started telemetry initialization");
     telemetry_service_init();

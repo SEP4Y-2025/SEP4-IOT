@@ -3,7 +3,8 @@
 #include "services/telemetry_service.h"
 #include "services/mqtt_service.h"
 #include "controllers/network_controller.h"
-#include "controllers/sensor_controller.h"
+//#include "controllers/sensor_controller.h"
+#include "services/sensor_service.h"
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
@@ -18,10 +19,6 @@
 
 #define JSON_BUF_SIZE 512
 static char _json_buf[JSON_BUF_SIZE];
-
-void pot_service_init(void)
-{
-}
 
 void pot_service_handle_activate(const char *topic, const uint8_t *payload, uint16_t len)
 {
@@ -73,13 +70,14 @@ bool pot_service_handle_get_pot_data(const char *topic, const uint8_t *payload, 
 {
     logger_service_log("Pot data requested");
 
-    sensor_controller_poll();
-    uint8_t hum_i = sensor_controller_get_humidity_integer();
-    uint8_t hum_d = sensor_controller_get_humidity_decimal();
-    uint8_t tmp_i = sensor_controller_get_temperature_integer();
-    uint8_t tmp_d = sensor_controller_get_temperature_decimal();
-    uint16_t light = sensor_controller_get_light();
-    uint8_t soil = sensor_controller_get_soil();
+    //sensor_controller_read();
+    sensor_service_read();
+    uint8_t hum_i = sensor_service_get_humidity_integer();
+    uint8_t hum_d = sensor_service_get_humidity_decimal();
+    uint8_t tmp_i = sensor_service_get_temperature_integer();
+    uint8_t tmp_d = sensor_service_get_temperature_decimal();
+    uint16_t light = sensor_service_get_light();
+    uint8_t soil = sensor_service_get_soil();
 
     logger_service_log("Pot data!!!!: %u.%u %u.%u %u %u\n", tmp_i, tmp_d, hum_i, hum_d, light, soil);
 

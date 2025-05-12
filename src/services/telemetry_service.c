@@ -1,6 +1,7 @@
 
 #include "services/telemetry_service.h"
-#include "controllers/sensor_controller.h"
+//#include "controllers/sensor_controller.h"
+#include "services/sensor_service.h"
 #include "controllers/network_controller.h"
 #include "services/wifi_service.h"
 #include "services/mqtt_service.h"
@@ -16,23 +17,8 @@
 #define JSON_BUF_SIZE 128
 static char _json_buf[JSON_BUF_SIZE];
 
-/// State flag: have we already done the CONNECT?
-// static bool       svc_mqtt_connected = false;
-
-/// Scratch buffers
-#define TEL_PKT_BUF_SZ 256
-static unsigned char _pkt_buf[TEL_PKT_BUF_SZ];
-// static char          _json_buf[128];
-
 void telemetry_service_init(void)
 {
-}
-
-void telemetry_service_poll(void)
-{
-    // Drain any incoming bytes (e.g. CONNACK or errors)
-    // uint8_t tmp[128];
-    //(void)network_controller_tcp_receive(tmp, sizeof(tmp));
 }
 
 void telemetry_service_publish(void)
@@ -40,13 +26,14 @@ void telemetry_service_publish(void)
     if (is_telemetry_enabled())
     {
         logger_service_log("Attempting to publish telemetry\n");
-        sensor_controller_poll();
-        uint8_t hum_i = sensor_controller_get_humidity_integer();
-        uint8_t hum_d = sensor_controller_get_humidity_decimal();
-        uint8_t tmp_i = sensor_controller_get_temperature_integer();
-        uint8_t tmp_d = sensor_controller_get_temperature_decimal();
-        uint16_t light = sensor_controller_get_light();
-        uint8_t soil = sensor_controller_get_soil();
+
+        sensor_service_read();
+        uint8_t hum_i = sensor_service_get_humidity_integer();
+        uint8_t hum_d = sensor_service_get_humidity_decimal();
+        uint8_t tmp_i = sensor_service_get_temperature_integer();
+        uint8_t tmp_d = sensor_service_get_temperature_decimal();
+        uint16_t light = sensor_service_get_light();
+        uint8_t soil = sensor_service_get_soil();
 
         logger_service_log("Telemetry: %u.%u %u.%u %u %u\n", tmp_i, tmp_d, hum_i, hum_d, light, soil);
 

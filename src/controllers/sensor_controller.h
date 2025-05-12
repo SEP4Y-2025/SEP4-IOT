@@ -12,7 +12,7 @@ void   sensor_controller_init(void);
  * Read *all* sensors and cache the latest values.  
  * Should be called whenever you want to sample (e.g. every 2 s).  
  */
-void   sensor_controller_poll(void);
+void   sensor_controller_read(void);
 
 /** Get the *last* successful reading. */
 uint8_t  sensor_controller_get_temperature_decimal(void);

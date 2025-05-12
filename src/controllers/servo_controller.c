@@ -1,7 +1,7 @@
 // servo_controller.c
 #include <stdint.h>
 #include <util/delay.h>
-#include "servo.h"           // your low-level driver: void servo(uint8_t angle);
+#include "servo.h"           
 #include "includes.h"        // for F_CPU, etc.
 
 /// Time (ms) it takes your continuous-rotation servo
