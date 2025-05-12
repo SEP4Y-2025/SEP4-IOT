@@ -13,18 +13,17 @@ void wifi_init()
     uart_init(USART_WIFI, wifi_baudrate, NULL);
 }
 
-
-
-
 /*
 void wifi_transmit(uint8_t *data, uint8_t length)
 {
     uart_send_array_blocking(USART_WIFI, data, length);
 }*/
 
-static void wifi_spy_callback(uint8_t byte) {
+static void wifi_spy_callback(uint8_t byte)
+{
     // 1) stash, if room
-    if (wifi_dataBufferIndex < WIFI_DATABUFFERSIZE - 1) {
+    if (wifi_dataBufferIndex < WIFI_DATABUFFERSIZE - 1)
+    {
         wifi_dataBuffer[wifi_dataBufferIndex++] = byte;
     }
     // 2) echo raw to PC for debug
@@ -40,7 +39,8 @@ void static wifi_clear_databuffer_and_index()
 
 static void wifi_command_callback(uint8_t received_byte)
 {
-    if (wifi_dataBufferIndex < WIFI_DATABUFFERSIZE - 1) {
+    if (wifi_dataBufferIndex < WIFI_DATABUFFERSIZE - 1)
+    {
         wifi_dataBuffer[wifi_dataBufferIndex++] = received_byte;
     }
 }
@@ -61,22 +61,31 @@ WIFI_ERROR_MESSAGE_t wifi_command(const char *str, uint16_t timeOut_s)
     uart_send_string_blocking(USART_WIFI, sbuf);
 
     // 4) wait up to timeOut_s seconds for an "OK" suffix
-    for (uint32_t i = 0; i < timeOut_s * 100; i++) {
+    for (uint32_t i = 0; i < timeOut_s * 100; i++)
+    {
         _delay_ms(10);
-        if (strstr((char*)wifi_dataBuffer, "OK\r\n")) {
+        if (strstr((char *)wifi_dataBuffer, "OK\r\n"))
+        {
             break;
         }
     }
 
     // 5) determine result
     WIFI_ERROR_MESSAGE_t res;
-    if (wifi_dataBufferIndex == 0) {
+    if (wifi_dataBufferIndex == 0)
+    {
         res = WIFI_ERROR_NOT_RECEIVING;
-    } else if (strstr((char*)wifi_dataBuffer, "ERROR")) {
+    }
+    else if (strstr((char *)wifi_dataBuffer, "ERROR"))
+    {
         res = WIFI_ERROR_RECEIVED_ERROR;
-    } else if (strstr((char*)wifi_dataBuffer, "FAIL")) {
+    }
+    else if (strstr((char *)wifi_dataBuffer, "FAIL"))
+    {
         res = WIFI_FAIL;
-    } else {
+    }
+    else
+    {
         res = WIFI_OK;
     }
 
@@ -325,52 +334,78 @@ WIFI_ERROR_MESSAGE_t wifi_command_TCP_transmit(uint8_t *data, uint16_t length)
     return WIFI_OK;
 }
 
-
-
 WIFI_ERROR_MESSAGE_t wifi_scan_APs(uint16_t timeout_s)
 {
-    // 1) send the CWLAP and collect into wifi_dataBuffer
-    WIFI_ERROR_MESSAGE_t err = wifi_command("AT+CWLAP", timeout_s);
-    if (err != WIFI_OK) return err;
-
-    // 2) null-terminate
-    if (wifi_dataBufferIndex < WIFI_DATABUFFERSIZE) {
-        wifi_dataBuffer[wifi_dataBufferIndex] = '\0';
-    } else {
-        wifi_dataBuffer[WIFI_DATABUFFERSIZE - 1] = '\0';
-    }
-
-    // 3) debug dump raw (optional)
-    uart_send_string_blocking(USART_0,
-        "\r\n<--- RAW CWLAP START --->\r\n");
-    uart_send_array_blocking(USART_0,
-                             wifi_dataBuffer,
-                             (uint16_t)wifi_dataBufferIndex);
-    uart_send_string_blocking(USART_0,
-        "\r\n<--- RAW CWLAP END --->\r\n");
-
-    // 4) parse each +CWLAP: line
-    char *saveptr, *line = strtok_r((char*)wifi_dataBuffer, "\r\n", &saveptr);
-    while (line) {
-        if (strncmp(line, "+CWLAP:", 7) == 0) {
-            char ssid[33] = {0};
-            int  rssi    = 0;
-            if (sscanf(line,
-                       "+CWLAP:(%*d,\"%32[^\"]\",%d",
-                       ssid, &rssi) == 2) {
-                char msg[64];
-                int len = snprintf(msg, sizeof(msg),
-                                   "SSID: %s, RSSI: %d dBm\r\n",
-                                   ssid, rssi);
-                uart_send_array_blocking(USART_0,
-                                         (uint8_t*)msg,
-                                         (uint16_t)len);
-            }
-        }
-        line = strtok_r(NULL, "\r\n", &saveptr);
-    }
-
-    // 5) clear for next scan
+    // 1) clear whatever old data might be
     wifi_clear_databuffer_and_index();
-    return WIFI_OK;
+
+    // 2) fire off the AT+CWLAP command
+    return wifi_command("AT+CWLAP", timeout_s);
+}
+
+// WIFI_ERROR_MESSAGE_t wifi_scan_APs(uint16_t timeout_s)
+// {
+
+//     wifi_clear_databuffer_and_index();
+//     // 1) send the CWLAP and collect into wifi_dataBuffer
+//     WIFI_ERROR_MESSAGE_t err = wifi_command("AT+CWLAP", timeout_s);
+//     if (err != WIFI_OK)
+//         return err;
+
+//     // 2) null-terminate
+//     if (wifi_dataBufferIndex < WIFI_DATABUFFERSIZE)
+//     {
+//         wifi_dataBuffer[wifi_dataBufferIndex] = '\0';
+//     }
+//     else
+//     {
+//         wifi_dataBuffer[WIFI_DATABUFFERSIZE - 1] = '\0';
+//     }
+
+//     // 3) debug dump raw (optional)
+//     uart_send_string_blocking(USART_0,
+//                               "\r\n<--- RAW CWLAP START --->\r\n");
+//     uart_send_array_blocking(USART_0,
+//                              wifi_dataBuffer,
+//                              (uint16_t)wifi_dataBufferIndex);
+//     uart_send_string_blocking(USART_0,
+//                               "\r\n<--- RAW CWLAP END --->\r\n");
+
+//     // 4) parse each +CWLAP: line
+//     char *saveptr, *line = strtok_r((char *)wifi_dataBuffer, "\r\n", &saveptr);
+//     while (line)
+//     {
+//         if (strncmp(line, "+CWLAP:", 7) == 0)
+//         {
+//             char ssid[33] = {0};
+//             int rssi = 0;
+//             if (sscanf(line,
+//                        "+CWLAP:(%*d,\"%32[^\"]\",%d",
+//                        ssid, &rssi) == 2)
+//             {
+//                 char msg[64];
+//                 int len = snprintf(msg, sizeof(msg),
+//                                    "SSID: %s, RSSI: %d dBm\r\n",
+//                                    ssid, rssi);
+//                 uart_send_array_blocking(USART_0,
+//                                          (uint8_t *)msg,
+//                                          (uint16_t)len);
+//             }
+//         }
+//         line = strtok_r(NULL, "\r\n", &saveptr);
+//     }
+
+//     // 5) clear for next scan
+//     // wifi_clear_databuffer_and_index();
+//     return WIFI_OK;
+// }
+
+const char *wifi_get_scan_buffer(void)
+{
+    return (const char *)wifi_dataBuffer;
+}
+
+uint16_t wifi_get_scan_buffer_len(void)
+{
+    return wifi_dataBufferIndex;
 }

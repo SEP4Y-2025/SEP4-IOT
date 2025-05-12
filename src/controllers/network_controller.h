@@ -25,16 +25,6 @@ void network_controller_init(void);
  */
 bool network_controller_setup(void);
 
-// /**
-//  * @brief Join the given WiFi network (blocking).
-//  * @param ssid     Null-terminated SSID string.
-//  * @param password Null-terminated password string.
-//  * @return true on success, false on failure.
-//  */
-// bool network_controller_connect_ap(const char *ssid, const char *password);
-
-WIFI_ERROR_MESSAGE_t network_controller_connect_ap(char *ssid, char *password, char *broker_ip, uint16_t broker_port, void (*callback)(void), char *callback_buffer);
-
 /**
  * @brief Leave the current WiFi network.
  * @return true on success.
@@ -69,5 +59,23 @@ bool network_controller_tcp_send(const uint8_t *data, uint16_t len);
  * @brief Close the TCP connection.
  */
 bool network_controller_tcp_close(void);
+
+typedef struct
+{
+    char ssid[33];
+    char password[64];
+} wifi_credential_t;
+
+// Returns true and fills out_ssid/out_password on success,
+// or false if no known AP was found or scan failed.
+bool wifi_get_best_credentials(uint16_t timeout_s,
+                               char *out_ssid,    // at least 33 bytes
+                               char *out_password // at least 64 bytes
+);
+
+// Redesigned connect_ap no longer needs SSID/password upfront:
+WIFI_ERROR_MESSAGE_t network_controller_connect_ap(
+    uint16_t timeout_s,
+    void (*callback)(void), char *callback_buffer);
 
 #endif // NETWORK_CONTROLLER_H

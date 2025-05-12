@@ -13,17 +13,17 @@
  */
 void wifi_service_init();
 
-WIFI_ERROR_MESSAGE_t wifi_service_connect(const char *s, const char *p, char *broker_ip, uint16_t broker_port, void (*callback)(void), char *callback_buffer);
+WIFI_ERROR_MESSAGE_t wifi_service_connect();
 
 /**
- * Drive the WiFi state machine.  
+ * Drive the WiFi state machine.
  * Call this every time through your main loop (e.g. 1–10 ms cadence).
  */
-//void wifi_service_poll(void);
+// void wifi_service_poll(void);
 
 /**
  * Returns true if we’ve successfully joined the AP and hold an IP.
  */
 bool wifi_service_is_connected(void);
 
-#endif 
+#endif
