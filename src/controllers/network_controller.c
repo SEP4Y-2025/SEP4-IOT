@@ -13,6 +13,7 @@
 static Network_TCP_Callback_t user_cb = NULL;
 #define NET_TCP_BUFFER_SIZE 512
 static uint8_t net_rx_buffer[NET_TCP_BUFFER_SIZE];
+static bool _tcp_connected = false;
 
 static const wifi_credential_t known_credentials[] = {
     {.ssid = "JanPhone", .password = "Hello World"},
@@ -20,8 +21,8 @@ static const wifi_credential_t known_credentials[] = {
     // …add more networks as needed…
 };
 
-static const char *broker_ip = "172.20.10.3";
-static const uint16_t broker_port = 1883;
+static void (*_tcp_cb)(void);
+static char *_tcp_buf;
 
 static const uint8_t known_credentials_len =
     sizeof(known_credentials) / sizeof(known_credentials[0]);
@@ -135,10 +136,14 @@ bool wifi_get_best_credentials(uint16_t timeout_s,
     return true;
 }
 
-void network_controller_init(void)
+void network_controller_init(void (*tcp_evt_cb)(void), char *tcp_evt_buf)
 {
+    _tcp_cb = tcp_evt_cb;
+    _tcp_buf = tcp_evt_buf;
+    _tcp_connected = false;
     // init UART & WiFi module
     wifi_init(); // :contentReference[oaicite:2]{index=2}:contentReference[oaicite:3]{index=3}
+    network_controller_setup();
 }
 
 bool network_controller_setup(void)
@@ -153,35 +158,60 @@ bool network_controller_setup(void)
     return true;
 }
 
-// bool network_controller_connect_ap(const char *ssid, const char *password) {
-//     bool ok = (wifi_command_join_AP((char*)ssid, (char*)password) == WIFI_OK);
-//     logger_service_log("AT+CWJAP \"%s\": %s", ssid, ok ? "OK" : "FAIL");
-//     return ok;
-// }
-
-bool network_controller_disconnect_ap(void)
+WIFI_ERROR_MESSAGE_t network_controller_connect_ap(uint16_t timeout_s)
 {
-    return (wifi_command_quit_AP() == WIFI_OK);
+    char ssid[33], pwd[64];
+    if (!wifi_get_best_credentials(timeout_s, ssid, pwd))
+        return WIFI_FAIL;
+
+    if (wifi_command_join_AP(ssid, pwd) != WIFI_OK)
+    {
+        logger_service_log("Wi-Fi: join AP failed\n");
+        return WIFI_FAIL;
+    }
+    logger_service_log("Wi-Fi: joined AP\n");
+    return WIFI_OK;
+}
+
+WIFI_ERROR_MESSAGE_t network_controller_disconnect_ap(void)
+{
+    WIFI_ERROR_MESSAGE_t res = wifi_command_quit_AP();
+    if (res != WIFI_OK)
+    {
+        logger_service_log("Wi-Fi quit AP failed: error=%d\n", res);
+    }
+    return res;
+}
+
+bool network_controller_is_tcp_connected(void)
+{
+    return _tcp_connected;
 }
 
 bool network_controller_is_ap_connected(void)
 {
-    bool ok = (wifi_command_AT() == WIFI_OK);
-    // We’ll get lots of these; log only on failure
-    if (!ok)
+    // send “AT” to check module alive/joined
+    WIFI_ERROR_MESSAGE_t res = wifi_command_AT();
+    if (res != WIFI_OK)
     {
-        logger_service_log("AT: no response (disconnected)");
+        // only log on failure to avoid log-spam
+        logger_service_log("AT check failed (disconnected), error=%d\n", res);
     }
-    return ok;
+    return (res == WIFI_OK);
 }
 
-bool network_controller_tcp_open(const char *ip, uint16_t port)
+WIFI_ERROR_MESSAGE_t network_controller_tcp_open(const char *ip,
+                                                 uint16_t port)
 {
-    bool ok = (wifi_command_create_TCP_connection(
-                   (char *)ip, port, internal_tcp_cb,
-                   (char *)net_rx_buffer) == WIFI_OK);
-    logger_service_log("AT+CIPSTART \"%s\",%u: %s", ip, (unsigned)port, ok ? "OK" : "FAIL");
-    return ok;
+    WIFI_ERROR_MESSAGE_t r = wifi_command_create_TCP_connection(
+        (char *)ip, port,
+        _tcp_cb, _tcp_buf);
+    _tcp_connected = (r == WIFI_OK);
+    logger_service_log("TCP open %s:%u → %s (err=%d)\n",
+                       ip, (unsigned)port,
+                       r == WIFI_OK ? "OK" : "FAIL",
+                       r);
+    return r;
 }
 
 void network_controller_set_tcp_callback(Network_TCP_Callback_t cb)
@@ -197,43 +227,4 @@ bool network_controller_tcp_send(const uint8_t *data, uint16_t len)
 bool network_controller_tcp_close(void)
 {
     return (wifi_command_close_TCP_connection() == WIFI_OK);
-}
-
-WIFI_ERROR_MESSAGE_t network_controller_connect_ap(
-    uint16_t timeout_s,
-    void (*callback)(void), char *callback_buffer)
-{
-    char ssid[33], password[64];
-    if (!wifi_get_best_credentials(timeout_s, ssid, password))
-    {
-        return WIFI_FAIL; // or some suitable error
-    }
-
-    // now exactly your existing join + MQTT logic:
-    WIFI_ERROR_MESSAGE_t wifi_res = wifi_command_join_AP(ssid, password);
-    char msg[128];
-    sprintf(msg, "Error: %d\n", wifi_res);
-    logger_service_log(msg);
-    if (wifi_res != WIFI_OK)
-    {
-        logger_service_log("Error connecting to WiFi!\n");
-        return wifi_res;
-    }
-
-    logger_service_log("Connected to WiFi!\n");
-    wifi_command_create_TCP_connection(broker_ip, broker_port, callback, callback_buffer);
-
-    unsigned char connect_buf[200];
-    int len = mqtt_service_create_mqtt_connect_packet(connect_buf, sizeof(connect_buf));
-    if (len > 0)
-        logger_service_log("MQTT Connect packet created!\n");
-
-    WIFI_ERROR_MESSAGE_t mqtt_res = wifi_command_TCP_transmit(connect_buf, len);
-    if (mqtt_res != WIFI_OK)
-    {
-        logger_service_log("Error sending MQTT Connect packet!\n");
-        return mqtt_res;
-    }
-
-    return WIFI_OK;
 }

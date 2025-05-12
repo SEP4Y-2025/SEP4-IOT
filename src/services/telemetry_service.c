@@ -67,22 +67,17 @@ void telemetry_service_publish(void)
 
         logger_service_log("New telemetry is build...\n");
 
-        unsigned char buffer[128];
-
         logger_service_log("Telemetry JSON payload: %s\n", _json_buf);
 
-        WIFI_ERROR_MESSAGE_t result = mqtt_service_publish(MQTT_TOPIC_AUTOMATIC_READINGS, (unsigned char *)_json_buf, buffer, sizeof(buffer));
-
-        if (result != WIFI_OK)
+        if (mqtt_service_publish(
+                MQTT_TOPIC_AUTOMATIC_READINGS,
+                _json_buf) != MQTT_OK)
         {
             logger_service_log("Telemetry publish failed\n");
             return false;
         }
-
-        logger_service_log("Telemetry published successfully\n");
-        return true;
     }
-    else 
+    else
     {
         logger_service_log("Telemetry is disabled\n");
         return false;

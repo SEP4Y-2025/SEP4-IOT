@@ -6,59 +6,22 @@
 #include <stdbool.h>
 #include "wifi.h"
 
-/**
- * @brief Callback invoked when TCP data arrives.
- * @param data Pointer to buffer holding the received bytes.
- * @param len  Number of bytes in the buffer.
- */
 typedef void (*Network_TCP_Callback_t)(const uint8_t *data, uint16_t len);
 
-/**
- * @brief Initialize the underlying UART & WiFi module.
- *        Must be called once at startup.
- */
-void network_controller_init(void);
-
-/**
- * @brief Perform one-time setup commands (disable echo, set mode, single-conn).
- * @return true on success, false otherwise.
- */
 bool network_controller_setup(void);
 
-/**
- * @brief Leave the current WiFi network.
- * @return true on success.
- */
-bool network_controller_disconnect_ap(void);
-
-/**
- * @brief Check if the WiFi module is responsive (and thus likely still on-line).
- * @return true if it replies “OK” to AT.
- */
 bool network_controller_is_ap_connected(void);
 
-/**
- * @brief Open a TCP connection to the given IP:port.
- * @param ip   Null-terminated ASCII IP (e.g. "192.168.1.42").
- * @param port TCP port number.
- * @return true on success.
- */
-bool network_controller_tcp_open(const char *ip, uint16_t port);
-
-/**
- * @brief Register your own callback for incoming TCP data.
- */
 void network_controller_set_tcp_callback(Network_TCP_Callback_t cb);
 
-/**
- * @brief Send raw bytes over the open TCP connection.
- */
 bool network_controller_tcp_send(const uint8_t *data, uint16_t len);
 
-/**
- * @brief Close the TCP connection.
- */
-bool network_controller_tcp_close(void);
+WIFI_ERROR_MESSAGE_t network_controller_disconnect_ap(void);
+
+bool network_controller_is_tcp_connected(void);
+
+WIFI_ERROR_MESSAGE_t network_controller_tcp_open(const char *ip,
+                                                 uint16_t port);
 
 typedef struct
 {
@@ -73,9 +36,13 @@ bool wifi_get_best_credentials(uint16_t timeout_s,
                                char *out_password // at least 64 bytes
 );
 
-// Redesigned connect_ap no longer needs SSID/password upfront:
-WIFI_ERROR_MESSAGE_t network_controller_connect_ap(
-    uint16_t timeout_s,
-    void (*callback)(void), char *callback_buffer);
+// stash the TCP callback & buffer once at startup:
+void network_controller_init(void (*tcp_evt_cb)(void), char *tcp_evt_buf);
+
+// join AP + open socket (no more callback args here)
+WIFI_ERROR_MESSAGE_t network_controller_connect_ap(uint16_t timeout_s);
+
+// just a status check
+bool network_controller_is_ap_connected(void);
 
 #endif // NETWORK_CONTROLLER_H
