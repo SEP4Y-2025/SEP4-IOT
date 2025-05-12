@@ -8,8 +8,10 @@
 #include <stdio.h>
 #include "config/device_config.h"
 #include "config/topics_config.h"
-#include "config/watering_config.h"
+#include "state/watering_state.h"
 #include "services/logger_service.h"
+#include "utils/adc_to_percentage_converter.h"
+#include "utils/adc_to_lux_converter.h"
 
 #define JSON_BUF_SIZE 128
 static char _json_buf[JSON_BUF_SIZE];
@@ -48,6 +50,9 @@ void telemetry_service_publish(void)
 
         logger_service_log("Telemetry: %u.%u %u.%u %u %u\n", tmp_i, tmp_d, hum_i, hum_d, light, soil);
 
+        uint32_t light_lux = convert_adc_to_lux(light);
+        uint8_t soil_percentage = convert_adc_to_percentage(soil);
+
         // Format JSON payload without floats
         //    e.g. {"temperature":27.8,"humidity":33.0,"light":502,"soil":123}
         int jlen = snprintf(_json_buf, sizeof(_json_buf),
@@ -58,11 +63,11 @@ void telemetry_service_publish(void)
                             "\"plant_pot_id\":\"%s\"}",
                             (unsigned)tmp_i, (unsigned)tmp_d,
                             (unsigned)hum_i, (unsigned)hum_d,
-                            (unsigned)light,
-                            (unsigned)soil, DEVICE_ID);
+                            (unsigned)light_lux,
+                            (unsigned)soil_percentage, DEVICE_ID);
         if (jlen <= 0 || jlen >= sizeof(_json_buf))
         {
-            return false;
+            return;
         }
 
         logger_service_log("New telemetry is build...\n");
@@ -76,15 +81,15 @@ void telemetry_service_publish(void)
         if (result != WIFI_OK)
         {
             logger_service_log("Telemetry publish failed\n");
-            return false;
+            return;
         }
 
         logger_service_log("Telemetry published successfully\n");
-        return true;
+        return;
     }
-    else 
+    else
     {
         logger_service_log("Telemetry is disabled\n");
-        return false;
+        return;
     }
 }

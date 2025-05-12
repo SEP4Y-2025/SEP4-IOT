@@ -9,8 +9,10 @@
 #include <stdio.h>
 #include "config/device_config.h"
 #include "config/topics_config.h"
-#include "config/watering_config.h"
+#include "state/watering_state.h"
 #include "utils/json_parser.h"
+#include "utils/adc_to_percentage_converter.h"
+#include "utils/adc_to_lux_converter.h"
 #include <avr/eeprom.h>
 
 
@@ -32,7 +34,7 @@ void pot_service_handle_activate(const char *topic, const uint8_t *payload, uint
     {
         update_watering_settings(frequency, dosage);
         logger_service_log("Watering settings updated and saved to EEPROM");
-        log_stored_watering_config();
+        log_stored_watering_state();
         set_watering_enabled(true);
     }
     else
@@ -81,8 +83,8 @@ bool pot_service_handle_get_pot_data(const char *topic, const uint8_t *payload, 
 
     logger_service_log("Pot data!!!!: %u.%u %u.%u %u %u\n", tmp_i, tmp_d, hum_i, hum_d, light, soil);
 
-    uint32_t light_lux = (light * 10000) / 1023;
-    uint8_t soil_percentage = (soil * 100) / 1023;
+    uint32_t light_lux = convert_adc_to_lux(light);
+    uint8_t soil_percentage = convert_adc_to_percentage(soil);
 
     // Format JSON payload without floats
     //    e.g. {"temperature":27.8,"humidity":33.0,"light":502,"soil":123}
