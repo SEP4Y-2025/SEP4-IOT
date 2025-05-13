@@ -83,7 +83,8 @@ void mqtt_service_event_callback()
       else if(strcmp(topic, MQTT_TOPIC_WATERING) == 0)
       {
         logger_service_log("Command received: Watering\n");
-        watering_service_handle_watering(topic, payload, payloadlen);
+        // --- This function is not implemented yet ---
+        //watering_service_handle_watering(topic, payload, payloadlen);
       }
 
       // TODO: add more handler functions here
