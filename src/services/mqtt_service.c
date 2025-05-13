@@ -4,8 +4,10 @@
 #include "services/logger_service.h"
 #include "services/mqtt_service.h"
 #include "services/pot_service.h"
+#include "services/watering_service.h"
 #include "config/device_config.h"
 #include "config/topics_config.h"
+#include "config/watering_config.h"
 
 char callback_buff[256];
 
@@ -83,8 +85,8 @@ void mqtt_service_event_callback()
       else if(strcmp(topic, MQTT_TOPIC_WATERING) == 0)
       {
         logger_service_log("Command received: Watering\n");
-        // --- This function is not implemented yet ---
-        //watering_service_handle_watering(topic, payload, payloadlen);
+        //watering_service_handle_settings_update(topic, payload, payloadlen);
+        logger_service_log("Watering settings updated: Frequency=%lu, Dosage=%lu\n", get_watering_frequency(), get_water_dosage());
       }
 
       // TODO: add more handler functions here

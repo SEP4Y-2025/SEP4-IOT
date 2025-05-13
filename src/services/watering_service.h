@@ -7,5 +7,6 @@
 
 void watering_service_init(void);
 void watering_service_water_pot(void);
+void watering_service_handle_settings_update(const char *topic, const uint8_t *payload, uint16_t len);
 
 #endif 
