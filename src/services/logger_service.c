@@ -29,28 +29,25 @@ void logger_service_log(const char *fmt, ...) {
     pc_comm_controller_send_str(_logger_buf);
 }
 
-void logger_service_log_internal(const char *file, const char *func, int line, const char *fmt, ...) {
+void logger_service_log_internal(const char *file, int line, const char *fmt, ...) {
+    if (!file || !fmt) return;
+
+    // Print [file:line]
+    int prefix_len = snprintf(_logger_buf, LOGGER_BUF_SZ - 1, "[%s:%d]\r\n", file, line);
+    if (prefix_len < 0 || prefix_len >= LOGGER_BUF_SZ - 1) return;
+
+    // Format the actual message below the file:line
     va_list args;
     va_start(args, fmt);
-    int n = vsnprintf(_logger_buf, LOGGER_BUF_SZ - 3, fmt, args);
+    int msg_len = vsnprintf(_logger_buf + prefix_len, LOGGER_BUF_SZ - prefix_len - 3, fmt, args);  // Leave space for \r\n\0
     va_end(args);
 
-    if (n < 0) return;
-    int len = (n < LOGGER_BUF_SZ - 3 ? n : LOGGER_BUF_SZ - 3);
+    if (msg_len < 0) return;
 
-    // Optional: prepend caller info
-    int header_len = snprintf(_logger_buf, LOGGER_BUF_SZ - len,
-        "[%s:%d %s] ", file, line, func);
-
-    if (header_len < 0 || header_len >= LOGGER_BUF_SZ - len) return;
-
-    // Shift message
-    memmove(_logger_buf + header_len, _logger_buf, len);
-    len += header_len;
-
-    _logger_buf[len++] = '\r';
-    _logger_buf[len++] = '\n';
-    _logger_buf[len]   = '\0';
+    int total_len = prefix_len + (msg_len < LOGGER_BUF_SZ - prefix_len - 3 ? msg_len : LOGGER_BUF_SZ - prefix_len - 3);
+    _logger_buf[total_len++] = '\r';
+    _logger_buf[total_len++] = '\n';
+    _logger_buf[total_len] = '\0';
 
     pc_comm_controller_send_str(_logger_buf);
 }
