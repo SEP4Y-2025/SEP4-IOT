@@ -27,9 +27,12 @@ void watering_service_handle_settings_update(const char *topic, const uint8_t *p
 {
     //  Handle the watering update command, depending on the payload
     /////////////////// Change This //////////////////
-    update_watering_settings(0, 0); // Dummy call to update the settings
+    update_watering_settings(0, 0); // Dummy call 
     //////////////////////////////////////////////////
 
+
+
+    
     const char *ack = "{\"status\":\"ok\"}";
 
     unsigned char buffer[JSON_BUF_SIZE];
