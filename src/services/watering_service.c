@@ -2,6 +2,7 @@
 #include "config/device_config.h"
 #include "services/logger_service.h"
 #include "config/watering_config.h"
+#include "utils/json_parser.h"
 #define JSON_BUF_SIZE 512
 static char _json_buf[JSON_BUF_SIZE];
 void watering_service_init(void)
@@ -25,13 +26,22 @@ void watering_service_water_pot(void)
 
 void watering_service_handle_settings_update(const char *topic, const uint8_t *payload, uint16_t len)
 {
-    //  Handle the watering update command, depending on the payload
-    /////////////////// Change This //////////////////
-    update_watering_settings(0, 0); // Dummy call 
-    //////////////////////////////////////////////////
-
-
-
+    
+    uint32_t freq = 0;
+    uint32_t dosage = 0;
+    if (parse_watering_payload((const char *)payload, &freq, &dosage))
+    {
+        set_telemetry_enabled(false);
+        update_watering_settings(freq, dosage);
+        logger_service_log("Watering settings updated and saved to EEPROM");
+        log_stored_watering_config();
+        set_watering_enabled(true);
+    }
+    else
+    {
+        logger_service_log("Failed to parse watering payload");
+    }
+    
     
     const char *ack = "{\"status\":\"ok\"}";
 
