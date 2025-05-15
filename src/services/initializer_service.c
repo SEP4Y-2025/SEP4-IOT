@@ -16,6 +16,7 @@
 #include "config/topics_config.h"
 #include "config/watering_config.h"
 #include "services/watering_service.h"
+#include "config/wifi_credentials.h"
 
 
 #define SENSOR_READ_INTERVAL 2000
@@ -33,8 +34,10 @@ void initializer_service_initialize_system(void)
     logger_service_log("Started telemetry initialization");
     telemetry_service_init();
 
-    //if (initializer_service_setup_network_connection("Kamtjatka7", "8755444387", "10.11.12.71", 1883, mqtt_service_event_callback, callback_buff) != WIFI_OK)
-    if (initializer_service_setup_network_connection("MartyPartyPhone", "123456789", "172.20.10.2", 1883, mqtt_service_event_callback, callback_buff) != WIFI_OK)
+    // Should be added automatically platformio, in case it is not:
+    // 1. Put credentials into credentials.csv 
+    // 2. run python3 generate_credentials.py 
+    if (initializer_service_setup_network_connection(WIFI_SSID, WIFI_PASSWORD, BROKER_IP, 1883, mqtt_service_event_callback, callback_buff) != WIFI_OK)
     {
         logger_service_log("Error setting up network connection!\n");
         return;
