@@ -3,7 +3,6 @@
 #include "services/telemetry_service.h"
 #include "services/mqtt_service.h"
 #include "controllers/network_controller.h"
-//#include "controllers/sensor_controller.h"
 #include "services/sensor_service.h"
 #include <stdbool.h>
 #include <string.h>
@@ -78,6 +77,7 @@ bool pot_service_handle_get_pot_data(const char *topic, const uint8_t *payload, 
     uint8_t tmp_d = sensor_service_get_temperature_decimal();
     uint16_t light = sensor_service_get_light();
     uint8_t soil = sensor_service_get_soil();
+    uint8_t water_level = sensor_service_get_water_level_percentage();
 
     logger_service_log("Pot data!!!!: %u.%u %u.%u %u %u\n", tmp_i, tmp_d, hum_i, hum_d, light, soil);
 
@@ -98,7 +98,7 @@ bool pot_service_handle_get_pot_data(const char *topic, const uint8_t *payload, 
                         (unsigned)tmp_i, (unsigned)tmp_d,
                         (unsigned)hum_i, (unsigned)hum_d,
                         (unsigned)light_lux,
-                        (unsigned)soil_percentage, DEVICE_ID, 42, 42);
+                        (unsigned)soil_percentage, DEVICE_ID, WATER_TANK_CAPACITY_ML, water_level);
 
     logger_service_log("Pot data is built...\n");
 
