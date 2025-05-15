@@ -62,7 +62,7 @@ void initializer_service_initialize_system(void)
     logger_service_log("Watering frequency: %lu seconds", watering_frequency_seconds);
 
     // Register watering service to run periodically based on watering frequency
-    scheduler_register(watering_service_water_pot, watering_frequency_seconds * 1000);  // Convert to milliseconds
+    scheduler_register(watering_service_water_pot, 10000);  // Convert to milliseconds
 
     // Main loop for running scheduled tasks
     while (1) {

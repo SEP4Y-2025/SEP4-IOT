@@ -28,11 +28,11 @@ void sensor_controller_read(void) {
     uint8_t water_level = 0;
 
     // Read water level from the rain water level sensor
-    if (rain_water_level_sensor_read(&water_level) == RAIN_SENSOR_OK) {
-        _water_level = water_level;  // Store the water level
-    } else {
-        _water_level = 0;  // Handle failure (optional)
-    }
+   // if (rain_water_level_sensor_read(&water_level) == RAIN_SENSOR_OK) {
+   //     _water_level = water_level;  // Store the water level
+   // } else {
+   //     _water_level = 0;  // Handle failure (optional)
+   // }
 
     // Log the water level for debugging (optional)
     logger_service_log("Water level: %d", _water_level);  // New addition for logging
