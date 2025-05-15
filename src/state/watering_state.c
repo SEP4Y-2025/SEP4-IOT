@@ -12,7 +12,7 @@
 
 static uint32_t watering_frequency = 0; // default 0 hours
 static uint32_t water_dosage = 0;       // default 0 ml
-static bool telemetry_enabled = true;
+static bool telemetry_enabled = false;
 static bool watering_enabled = false;
 
 static void save_config()

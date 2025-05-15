@@ -21,7 +21,7 @@
 
 #define MQTT_PING_INTERVAL 15000 
 #define MQTT_POLL_INTERVAL_MS 15000
-#define TELEMETRY_PUBLISH_INTERVAL 10000
+#define TELEMETRY_PUBLISH_INTERVAL 30000
 #define WIFI_POLL_INTERVAL_MS 1000
 
 void initializer_service_initialize_system(void)
@@ -41,7 +41,7 @@ void initializer_service_initialize_system(void)
     telemetry_service_init();
 
     wifi_service_init();
-    mqtt_service_init("172.20.10.3", 1883);
+    mqtt_service_init("192.168.87.114", 1883);
 
     logger_service_log("Connected to WiFi and MQTT broker!\n");
 
@@ -55,7 +55,7 @@ void initializer_service_initialize_system(void)
 
     // For Mathias: the watering_frequency  is in hours
     // scheduler_register(watering_service_water_pot, get_watering_frequency() * 3600000); // Convert hours to milliseconds
-    // scheduler_register(watering_service_water_pot, get_watering_frequency() * 1000); // Use seconds for testing
+    scheduler_register(watering_service_water_pot, get_watering_frequency() * 1000); // Use seconds for testing
 
     while (1)
     {

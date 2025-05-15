@@ -30,8 +30,8 @@ void pot_service_handle_activate(const char *topic, const uint8_t *payload, uint
     {
         update_watering_settings(frequency, dosage);
         logger_service_log("Watering settings updated and saved to EEPROM");
-        log_stored_watering_state();
         set_watering_enabled(true);
+        log_stored_watering_state();
     }
     else
     {

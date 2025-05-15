@@ -16,6 +16,7 @@ static bool _tcp_connected = false;
 
 static const wifi_credential_t known_credentials[] = {
     {.ssid = "JanPhone", .password = "Hello World"},
+    {.ssid = "04898804_2.4GHz", .password = "08400381"}
     // {.ssid = "Kamtjatka10", .password = "8755444387"},
     // …add more networks as needed…
 };
