@@ -16,7 +16,6 @@
 #include "utils/adc_to_lux_converter.h"
 #include <avr/eeprom.h>
 
-
 #define JSON_BUF_SIZE 512
 static char _json_buf[JSON_BUF_SIZE];
 
@@ -39,14 +38,15 @@ void pot_service_handle_activate(const char *topic, const uint8_t *payload, uint
         logger_service_log("Failed to parse watering payload");
     }
 
-    const char *ack = "{\"status\":\"ok\"}";
-
-    unsigned char buffer[JSON_BUF_SIZE];
-
+    // Send ACK
     char response_topic[64];
     snprintf(response_topic, sizeof(response_topic), "%s/ok", topic);
 
-    mqtt_service_publish(response_topic, (const uint8_t *)ack, buffer, sizeof(buffer));
+    mqtt_error_t res = mqtt_service_publish(response_topic, "{\"status\":\"ok\"}");
+    if (res != MQTT_OK)
+    {
+        logger_service_log("Pot activate ACK publish failed\n");
+    }
 }
 
 void pot_service_handle_deactivate(const char *topic, const uint8_t *payload, uint16_t len)
@@ -56,14 +56,15 @@ void pot_service_handle_deactivate(const char *topic, const uint8_t *payload, ui
 
     logger_service_log("Pot DEACTIVATED");
 
-    const char *ack = "{\"status\":\"ok\"}";
-
-    unsigned char buffer[JSON_BUF_SIZE];
-
+    // Send ACK
     char response_topic[64];
     snprintf(response_topic, sizeof(response_topic), "%s/ok", topic);
 
-    mqtt_service_publish(response_topic, (const uint8_t *)ack, buffer, sizeof(buffer));
+    mqtt_error_t res = mqtt_service_publish(response_topic, "{\"status\":\"ok\"}");
+    if (res != MQTT_OK)
+    {
+        logger_service_log("Pot deactivate ACK publish failed\n");
+    }
 }
 
 bool pot_service_handle_get_pot_data(const char *topic, const uint8_t *payload, uint16_t len)
@@ -112,12 +113,12 @@ bool pot_service_handle_get_pot_data(const char *topic, const uint8_t *payload, 
 
     logger_service_log("Pot JSON payload: %s\n", _json_buf);
 
+    // Publish it
     char response_topic[64];
     snprintf(response_topic, sizeof(response_topic), "%s/ok", topic);
 
-    WIFI_ERROR_MESSAGE_t result = mqtt_service_publish(response_topic, (unsigned char *)_json_buf, buffer, sizeof(buffer));
-
-    if (result != WIFI_OK)
+    mqtt_error_t res = mqtt_service_publish(response_topic, _json_buf);
+    if (res != MQTT_OK)
     {
         logger_service_log("Pot data publish failed\n");
         return false;
