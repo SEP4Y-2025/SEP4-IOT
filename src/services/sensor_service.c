@@ -28,3 +28,11 @@ uint16_t sensor_service_get_light(void) {
 uint16_t sensor_service_get_soil(void) {
     return sensor_controller_get_soil();
 }
+
+uint16_t sensor_service_get_water_level_raw(void) {
+    return sensor_controller_get_water_level_raw();
+}
+
+uint8_t sensor_service_get_water_level_percentage(void) {
+    return sensor_controller_get_water_level_percentage();
+}
