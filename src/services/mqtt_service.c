@@ -204,7 +204,7 @@ WIFI_ERROR_MESSAGE_t mqtt_service_subscribe_to_topic(MQTTString topic)
 
   uint8_t buffer[128];
 
-  uint16_t packetId = 1; // Can be incremented if you send multiple subscriptions
+  uint16_t packetId = 1; 
   int qos = 1;           // QoS level 1 (as expected)
 
   int len = MQTTSerialize_subscribe(buffer, sizeof(buffer), 0, packetId, 1, &topic, &qos);
@@ -214,7 +214,6 @@ WIFI_ERROR_MESSAGE_t mqtt_service_subscribe_to_topic(MQTTString topic)
 
   packetId++; // Increment packet ID for next subscription
 
-  // Send the subscribe packet over TCP
   logger_service_log("Sending subscribe packet: %d\n", len);
   return wifi_command_TCP_transmit(buffer, len);
 }

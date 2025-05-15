@@ -3,8 +3,10 @@
 #include "services/logger_service.h"
 #include "config/watering_config.h"
 #include "utils/json_parser.h"
+#include "state/watering_state.h"
 #define JSON_BUF_SIZE 512
 static char _json_buf[JSON_BUF_SIZE];
+
 void watering_service_init(void)
 {
 

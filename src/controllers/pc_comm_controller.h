@@ -1,4 +1,3 @@
-// src/controllers/pc_comm_controller.h
 #ifndef PC_COMM_CONTROLLER_H
 #define PC_COMM_CONTROLLER_H
 
@@ -27,4 +26,4 @@ bool pc_comm_controller_send(const uint8_t *data, uint16_t len);
  */
 bool pc_comm_controller_send_str(const char *s);
 
-#endif // PC_COMM_CONTROLLER_H
+#endif 

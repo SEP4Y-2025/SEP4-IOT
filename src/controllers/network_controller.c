@@ -1,4 +1,3 @@
-// src/controllers/network_controller.c
 #include "controllers/network_controller.h"
 #include "services/logger_service.h"
 #include "wifi.h"

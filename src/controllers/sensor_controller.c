@@ -1,10 +1,8 @@
-// controllers/sensor_controller.c
 #include "controllers/sensor_controller.h"
 #include "dht11.h"    // your low-level DHT22 driver
 #include "light.h"
 #include "soil.h"
 #include "services/logger_service.h"
-//#include "ldr.h"      // your low-level LDR driver
 
 static uint8_t    _temp[2];
 static uint8_t    _hum[2];
@@ -15,10 +13,9 @@ void sensor_controller_init(void) {
     dht11_init();   // sets up the data pin, timing, etc.
     light_init();
     soil_init();
-    // ldr_init();     // configures the ADC channel for the photo-resistor
 }
 
-void sensor_controller_poll(void) {
+void sensor_controller_read(void) {
     DHT11_ERROR_MESSAGE_t err = dht11_get(&_hum[0], &_hum[1], &_temp[0], &_temp[1]);
     
     // if (err == DHT11_OK) {
