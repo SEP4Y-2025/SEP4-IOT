@@ -16,9 +16,9 @@ void watering_service_init(void)
 
 void watering_service_water_pot(void)
 {
-    // char buffer[64];
-    // snprintf(buffer, sizeof(buffer), "Rain water level: %d", rain_water_level_sensor_read());
-    // logger_service_log(buffer);
+     char buffer[64];
+     snprintf(buffer, sizeof(buffer), "Rain water level: %d", rain_water_level_sensor_read_raw());
+     logger_service_log(buffer);
     if (true)
     {
     
@@ -36,10 +36,10 @@ void watering_service_water_pot(void)
         // **Read soil moisture value (assuming it returns a value from 0-1023)**
         // int moisture_value = analogRead(A8);
         // logger_service_log("Soil moisture level: %d", moisture_value);
-        // pump_controller_init();  // Initialize the pump controller
+         pump_controller_init();  // Initialize the pump controller
         // **Dispense 25 mL of water every time it's required**
         // We calculate how long the pump should run to dispense 25 mL (in seconds or milliseconds)
-        uint32_t watering_time_ms = 25.0 / 240000 * 3600 * 1000; // Pump runs for 0.375 seconds to dispense 25 mL
+        uint32_t watering_time_ms = 25.0 / 240000 * 3600 * 1000 *2 ; // Pump runs for 0.375 seconds to dispense 25 mL
         logger_service_log("Watering time: %lu ms", watering_time_ms);
         activate_pump(watering_time_ms); // Activate the pump for the calculated time
     }
