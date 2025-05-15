@@ -157,11 +157,24 @@ mqtt_error_t mqtt_service_connect(void)
     logger_service_log("MQTT: serialize CONNECT failed\n");
     return MQTT_FAIL;
   }
+
   if (wifi_command_TCP_transmit(buf, len) != WIFI_OK)
   {
-    logger_service_log("MQTT: send CONNECT failed\n");
-    return MQTT_FAIL;
+    logger_service_log("MQTT: send CONNECT failed, attempting TCP reconnect...\n");
+    network_controller_tcp_close();
+    if (network_controller_tcp_open(s_broker_ip, s_broker_port) != WIFI_OK)
+    {
+      logger_service_log("MQTT: TCP reconnect failed\n");
+      return MQTT_FAIL;
+    }
+
+    if (wifi_command_TCP_transmit(buf, len) != WIFI_OK)
+    {
+      logger_service_log("MQTT: send CONNECT after reconnect failed\n");
+      return MQTT_FAIL;
+    }
   }
+
 
   // 4) Wait (blocking) up to 5 s for CONNACK
   uint32_t start = scheduler_millis();

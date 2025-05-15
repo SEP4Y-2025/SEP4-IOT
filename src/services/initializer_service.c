@@ -42,16 +42,9 @@ void initializer_service_initialize_system(void)
     logger_service_log("Started telemetry initialization");
     telemetry_service_init();
 
-    // Should be added automatically platformio, in case it is not:
-    // 1. Put credentials into credentials.csv 
-    // 2. run python3 generate_credentials.py 
-    if (initializer_service_setup_network_connection(WIFI_SSID, WIFI_PASSWORD, BROKER_IP, 1883, mqtt_service_event_callback, callback_buff) != WIFI_OK)
-    {
-        logger_service_log("Error setting up network connection!\n");
-        return;
-    }
+
     wifi_service_init();
-    mqtt_service_init("192.168.87.114", 1883);
+    mqtt_service_init("172.20.10.2", 1883);
 
     logger_service_log("Connected to WiFi and MQTT broker!\n");
 

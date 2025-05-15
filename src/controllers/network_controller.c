@@ -1,6 +1,7 @@
 #include "controllers/network_controller.h"
 #include "services/logger_service.h"
 #include "services/mqtt_service.h"
+
 // #include "services/wifi_service.h"
 #include "wifi.h"
 #include <string.h>
@@ -15,6 +16,7 @@ static uint8_t net_rx_buffer[NET_TCP_BUFFER_SIZE];
 static bool _tcp_connected = false;
 
 static const wifi_credential_t known_credentials[] = {
+    {.ssid = "MartyPartyPhone", .password = "123456789"},
     {.ssid = "JanPhone", .password = "Hello World"},
     {.ssid = "04898804_2.4GHz", .password = "08400381"}
     // {.ssid = "Kamtjatka10", .password = "8755444387"},
