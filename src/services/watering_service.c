@@ -18,7 +18,7 @@ void watering_service_water_pot(void)
         uint32_t dosage = get_water_dosage();
         uint32_t tank_capacity = WATER_TANK_CAPACITY_ML;
 
-        logger_service_log("Watering pot...\n");
+        logger_service_log("\nWatering pot...\n");
 
         //For Mathias: your watering code goes here
         //This function should just water the pot with the correct quantity of water, it is already set to repeat
