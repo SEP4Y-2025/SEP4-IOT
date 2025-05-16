@@ -22,19 +22,19 @@ void pot_service_handle_activate(const char *topic, const uint8_t *payload, uint
 {
     set_telemetry_enabled(true);
 
-    logger_service_log("Pot ACTIVATED");
+    LOG("Pot ACTIVATED");
 
     uint32_t frequency = 0, dosage = 0;
     if (parse_watering_payload((const char *)payload, &frequency, &dosage))
     {
         update_watering_settings(frequency, dosage);
-        logger_service_log("Watering settings updated and saved to EEPROM");
+        LOG("Watering settings updated and saved to EEPROM");
         set_watering_enabled(true);
         log_stored_watering_state();
     }
     else
     {
-        logger_service_log("Failed to parse watering payload");
+        LOG("Failed to parse watering payload");
     }
 
     // Send ACK
@@ -44,7 +44,7 @@ void pot_service_handle_activate(const char *topic, const uint8_t *payload, uint
     mqtt_error_t res = mqtt_service_publish(response_topic, "{\"status\":\"ok\"}");
     if (res != MQTT_OK)
     {
-        logger_service_log("Pot activate ACK publish failed\n");
+        LOG("Pot activate ACK publish failed\n");
     }
 }
 
@@ -53,7 +53,7 @@ void pot_service_handle_deactivate(const char *topic, const uint8_t *payload, ui
     set_telemetry_enabled(false);
     set_watering_enabled(false);
 
-    logger_service_log("Pot DEACTIVATED");
+    LOG("Pot DEACTIVATED");
 
     // Send ACK
     char response_topic[64];
@@ -62,13 +62,13 @@ void pot_service_handle_deactivate(const char *topic, const uint8_t *payload, ui
     mqtt_error_t res = mqtt_service_publish(response_topic, "{\"status\":\"ok\"}");
     if (res != MQTT_OK)
     {
-        logger_service_log("Pot deactivate ACK publish failed\n");
+        LOG("Pot deactivate ACK publish failed\n");
     }
 }
 
 bool pot_service_handle_get_pot_data(const char *topic, const uint8_t *payload, uint16_t len)
 {
-    logger_service_log("Pot data requested");
+    LOG("Pot data requested");
 
     //sensor_controller_read();
     sensor_service_read();
@@ -80,7 +80,7 @@ bool pot_service_handle_get_pot_data(const char *topic, const uint8_t *payload, 
     uint8_t soil = sensor_service_get_soil();
     uint8_t water_level = sensor_service_get_water_level_percentage();
 
-    logger_service_log("Pot data!!!!: %u.%u %u.%u %u %u\n", tmp_i, tmp_d, hum_i, hum_d, light, soil);
+    LOG("Pot data!!!!: %u.%u %u.%u %u %u\n", tmp_i, tmp_d, hum_i, hum_d, light, soil);
 
     uint32_t light_lux = convert_adc_to_lux(light);
     uint8_t soil_percentage = convert_adc_to_percentage(soil);
@@ -101,17 +101,17 @@ bool pot_service_handle_get_pot_data(const char *topic, const uint8_t *payload, 
                         (unsigned)light_lux,
                         (unsigned)soil_percentage, DEVICE_ID, WATER_TANK_CAPACITY_ML, water_level);
 
-    logger_service_log("Pot data is built...\n");
+    LOG("Pot data is built...\n");
 
     if (jlen <= 0 || jlen >= sizeof(_json_buf))
     {
         return false;
     }
-    logger_service_log("The length is ok...\n");
+    LOG("The length is ok...\n");
 
     unsigned char buffer[JSON_BUF_SIZE];
 
-    logger_service_log("Pot JSON payload: %s\n", _json_buf);
+    LOG("Pot JSON payload: %s\n", _json_buf);
 
     // Publish it
     char response_topic[64];
@@ -120,10 +120,10 @@ bool pot_service_handle_get_pot_data(const char *topic, const uint8_t *payload, 
     mqtt_error_t res = mqtt_service_publish(response_topic, _json_buf);
     if (res != MQTT_OK)
     {
-        logger_service_log("Pot data publish failed\n");
+        LOG("Pot data publish failed\n");
         return false;
     }
 
-    logger_service_log("Pot data published successfully\n");
+    LOG("Pot data published successfully\n");
     return true;
 }

@@ -25,14 +25,14 @@ void wifi_service_init()
 {
   state = DISCONNECTED;
   last_ms = scheduler_millis();
-  logger_service_log("Wi-Fi Initialized");
+  LOG("Wi-Fi Initialized");
 }
 
 WIFI_ERROR_MESSAGE_t wifi_service_connect()
 {
   state = CONNECTING;
   last_ms = scheduler_millis();
-  logger_service_log("Wi-Fi: connecting to");
+  LOG("Wi-Fi: connecting to");
 
   return network_controller_connect_ap(10);
 }
@@ -52,7 +52,7 @@ void wifi_service_poll(void)
   case DISCONNECTED:
     if (now - last_ms >= 5000)
     {
-      logger_service_log("Wi-Fi: trying to connect to wifi");
+      LOG("Wi-Fi: trying to connect to wifi");
       network_controller_connect_ap(10);
       state = CONNECTING;
       last_ms = now;
@@ -73,7 +73,7 @@ void wifi_service_poll(void)
   case CONNECTED:
     if (now - last_ms >= 30000)
     {
-      logger_service_log("Wi-Fi: checking still connected");
+      LOG("Wi-Fi: checking still connected");
       if (!network_controller_is_ap_connected())
         state = DISCONNECTED;
       last_ms = now;
@@ -97,10 +97,10 @@ void wifi_service_poll(void)
                                ? WIFI_STATE_NAMES[state]
                                : "UNKNOWN";
 
-    logger_service_log(
+    LOG(
         "Wi-Fi state: %s → %s",
         old_name, new_name);
   }
 
-  // logger_service_log("Wifi state is: %s", state);
+  // LOG("Wifi state is: %s", state);
 }

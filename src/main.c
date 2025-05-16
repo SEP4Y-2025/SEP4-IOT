@@ -4,7 +4,7 @@
 int main(void)
 {
     initializer_service_initialize_system();
-    logger_service_log("Initialization complete.\n");
+    LOG("Initialization complete.\n");
 
     return 0;
 }

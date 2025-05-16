@@ -25,7 +25,7 @@ void telemetry_service_publish(void)
 {
     if (is_telemetry_enabled())
     {
-        logger_service_log("Attempting to publish telemetry\n");
+        LOG("Attempting to publish telemetry\n");
 
         sensor_service_read();
         uint8_t hum_i = sensor_service_get_humidity_integer();
@@ -35,7 +35,7 @@ void telemetry_service_publish(void)
         uint16_t light = sensor_service_get_light();
         uint8_t soil = sensor_service_get_soil();
 
-        logger_service_log("Telemetry: %u.%u %u.%u %u %u\n", tmp_i, tmp_d, hum_i, hum_d, light, soil);
+        LOG("Telemetry: %u.%u %u.%u %u %u\n", tmp_i, tmp_d, hum_i, hum_d, light, soil);
 
         uint32_t light_lux = convert_adc_to_lux(light);
         uint8_t soil_percentage = convert_adc_to_percentage(soil);
@@ -57,24 +57,24 @@ void telemetry_service_publish(void)
             return;
         }
 
-        logger_service_log("New telemetry is build...\n");
+        LOG("New telemetry is build...\n");
 
-        logger_service_log("Telemetry JSON payload: %s\n", _json_buf);
+        LOG("Telemetry JSON payload: %s\n", _json_buf);
 
         if (mqtt_service_publish(
                 MQTT_TOPIC_AUTOMATIC_READINGS,
                 _json_buf) != MQTT_OK)
         {
-            logger_service_log("Telemetry publish failed\n");
+            LOG("Telemetry publish failed\n");
             return;
         }
 
-        logger_service_log("Telemetry published successfully\n");
+        LOG("Telemetry published successfully\n");
         return;
     }
     else
     {
-        logger_service_log("Telemetry is disabled\n");
+        LOG("Telemetry is disabled\n");
         return;
     }
 }

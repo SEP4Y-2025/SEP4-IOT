@@ -38,22 +38,22 @@ void initializer_service_initialize_system(void)
 
     wifi_service_init();
     mqtt_service_init("172.20.10.2", 1883);
-    logger_service_log("Connected to WiFi and MQTT broker!\n");
+    LOG("Connected to WiFi and MQTT broker!\n");
 
 
     // Initialize logger
     logger_service_init(9600);
-    logger_service_log("Logger initialized");
+    LOG("Logger initialized");
 
     watering_service_init();
-    logger_service_log("Watering service initialized");
+    LOG("Watering service initialized");
 
     // Start sensor initialization
-    logger_service_log("Started sensor initialization");
+    LOG("Started sensor initialization");
     sensor_service_init();
 
     // Start telemetry initialization
-    logger_service_log("Started telemetry initialization");
+    LOG("Started telemetry initialization");
     telemetry_service_init();
 
     // Wait before subscribing to topics
@@ -78,7 +78,7 @@ void initializer_service_initialize_system(void)
 
 WIFI_ERROR_MESSAGE_t initializer_service_setup_network_connection(void (*callback)(void), char *callback_buffer)
 {
-    logger_service_log("Connecting to WiFi...\n");
+    LOG("Connecting to WiFi...\n");
     wifi_service_init(callback, callback_buffer);
     return wifi_service_connect();
 }

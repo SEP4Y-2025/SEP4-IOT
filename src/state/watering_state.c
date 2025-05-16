@@ -78,7 +78,7 @@ void log_stored_watering_state() {
              telem ? "ON" : "OFF",
              water ? "ON" : "OFF");
 
-    logger_service_log(buffer);
+    LOG(buffer);
 }
 
 void set_telemetry_enabled(bool enabled)
