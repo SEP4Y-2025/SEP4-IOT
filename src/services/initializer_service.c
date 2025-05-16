@@ -18,13 +18,28 @@
 #include "services/watering_service.h"
 #include "config/wifi_credentials.h"
 
+#include "services/wifi_service.h"
+#include "controllers/network_controller.h"
+
 #define MQTT_PING_INTERVAL 5000 
-#define TELEMETRY_PUBLISH_INTERVAL 30000 
+#define MQTT_POLL_INTERVAL_MS 15000
+#define TELEMETRY_PUBLISH_INTERVAL 30000
+#define WIFI_POLL_INTERVAL_MS 1000
 
 void initializer_service_initialize_system(void)
 {
     // Initialize scheduler
     scheduler_init();
+
+    // Initialize the network controller *once* with MQTT callback + buffer
+    network_controller_init(
+        mqtt_service_event_callback,
+        callback_buff);
+
+    wifi_service_init();
+    mqtt_service_init("172.20.10.2", 1883);
+    logger_service_log("Connected to WiFi and MQTT broker!\n");
+
 
     // Initialize logger
     logger_service_init(9600);
@@ -41,44 +56,29 @@ void initializer_service_initialize_system(void)
     logger_service_log("Started telemetry initialization");
     telemetry_service_init();
 
-    // Should be added automatically platformio, in case it is not:
-    // 1. Put credentials into credentials.csv 
-    // 2. run python3 generate_credentials.py 
-    if (initializer_service_setup_network_connection(WIFI_SSID, WIFI_PASSWORD, BROKER_IP, 1883, mqtt_service_event_callback, callback_buff) != WIFI_OK)
-    {
-        logger_service_log("Error setting up network connection!\n");
-        return;
-    }
-
-    logger_service_log("Connected to WiFi and MQTT broker!\n");
-
     // Wait before subscribing to topics
     _delay_ms(5000);
-    mqtt_service_subscribe_to_all_topics();
+    //mqtt_service_subscribe_to_all_topics();
+    load_watering_state(); // Load watering settings from EEPROM
 
-    // Load watering settings from EEPROM
-    load_watering_state(); 
+    scheduler_register(wifi_service_poll, WIFI_POLL_INTERVAL_MS);
+    scheduler_register(mqtt_service_poll, MQTT_POLL_INTERVAL_MS);
+    scheduler_register(telemetry_service_publish, TELEMETRY_PUBLISH_INTERVAL);
 
-    // Register periodic tasks for MQTT ping and telemetry
-    scheduler_register(mqtt_service_send_pingreq, MQTT_PING_INTERVAL);          
-    scheduler_register(telemetry_service_publish, TELEMETRY_PUBLISH_INTERVAL);     
+    // For Mathias: the watering_frequency  is in hours
+    // scheduler_register(watering_service_water_pot, get_watering_frequency() * 3600000); // Convert hours to milliseconds
+    scheduler_register(watering_service_water_pot, get_watering_frequency() * 1000); // Use seconds for testing
 
-    uint32_t watering_frequency_seconds = get_watering_frequency() * 3600;  // Convert hours to seconds
-    logger_service_log("Watering frequency: %lu seconds", watering_frequency_seconds);
-
-    //scheduler_register(watering_service_water_pot, watering_frequency_seconds * 1000);  // for real watering in hours
-    scheduler_register(watering_service_water_pot, get_watering_frequency() * 1000);  // 10 hours -> 10 seconds
-
-    // Main loop for running scheduled tasks
-    while (1) {
+    while (1)
+    {
         scheduler_run_pending_tasks();
         _delay_ms(10); // avoid tight loop
     }
 }
 
-WIFI_ERROR_MESSAGE_t initializer_service_setup_network_connection(char *ssid, char *password, char *broker_ip, uint16_t broker_port, void (*callback)(void), char *callback_buffer)
+WIFI_ERROR_MESSAGE_t initializer_service_setup_network_connection(void (*callback)(void), char *callback_buffer)
 {
     logger_service_log("Connecting to WiFi...\n");
-    wifi_service_init();
-    return wifi_service_connect(ssid, password, broker_ip, broker_port, callback, callback_buffer);
+    wifi_service_init(callback, callback_buffer);
+    return wifi_service_connect();
 }

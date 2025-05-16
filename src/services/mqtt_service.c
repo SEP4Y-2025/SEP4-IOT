@@ -7,9 +7,23 @@
 #include "services/watering_service.h"
 #include "config/device_config.h"
 #include "config/topics_config.h"
-#include "config/watering_config.h"
+#include "controllers/network_controller.h"
+#
 
 char callback_buff[256];
+
+static volatile bool _mqtt_up = false;
+static uint32_t _poll_ms;
+
+static char *s_broker_ip;
+static uint16_t s_broker_port;
+
+void mqtt_service_init(char *broker_ip, uint16_t broker_port)
+{
+  s_broker_ip = broker_ip;
+  s_broker_port = broker_port;
+  logger_service_log("MQTT service initialized (%s:%u)\n", broker_ip, broker_port);
+}
 
 void mqtt_service_event_callback()
 {
@@ -30,6 +44,7 @@ void mqtt_service_event_callback()
   {
   case 2: // MQTT CONNACK
     logger_service_log("RECEIVED CONNACK\n");
+    _mqtt_up = true;
     break;
 
   case 3: // MQTT PUBLISH
@@ -85,7 +100,7 @@ void mqtt_service_event_callback()
       else if(strcmp(topic, MQTT_TOPIC_WATERING) == 0)
       {
         logger_service_log("Command received: Watering\n");
-        //watering_service_handle_settings_update(topic, payload, payloadlen);
+        watering_service_handle_settings_update(topic, payload, payloadlen);
         logger_service_log("Watering settings updated: Frequency=%lu, Dosage=%lu\n", get_watering_frequency(), get_water_dosage());
       }
 
@@ -103,11 +118,11 @@ void mqtt_service_event_callback()
   }
 
   case 9: // MQTT SUBACK
-    //logger_service_log("RECEIVED SUBACK\n");
+    // logger_service_log("RECEIVED SUBACK\n");
     break;
 
   case 13: // MQTT PINGRESP
-    //logger_service_log("RECEIVED PINGRESP\n");
+    // logger_service_log("RECEIVED PINGRESP\n");
     break;
 
   default: // Not interesting
@@ -116,24 +131,60 @@ void mqtt_service_event_callback()
   }
 }
 
-void mqtt_service_send_pingreq(void)
-{
-  unsigned char buf[10];
-  int len = MQTTSerialize_pingreq(buf, sizeof(buf));
+bool mqtt_service_is_connected(void) { return _mqtt_up; }
 
+mqtt_error_t mqtt_service_connect(void)
+{
+  // 1) Ensure Wi-Fi AP is up
+  if (!network_controller_is_ap_connected())
+    return MQTT_FAIL;
+
+  // 2) Ensure TCP is open
+  if (!network_controller_is_tcp_connected())
+  {
+    if (network_controller_tcp_open(s_broker_ip, s_broker_port) != WIFI_OK)
+    {
+      logger_service_log("MQTT: TCP open failed\n");
+      return MQTT_FAIL;
+    }
+  }
+
+  // 3) Build and send MQTT CONNECT packet
+  unsigned char buf[200];
+  int len = mqtt_service_create_mqtt_connect_packet(buf, sizeof(buf));
   if (len <= 0)
   {
-    logger_service_log("Failed to serialize PINGREQ\n");
-    return;
+    logger_service_log("MQTT: serialize CONNECT failed\n");
+    return MQTT_FAIL;
   }
 
   if (wifi_command_TCP_transmit(buf, len) != WIFI_OK)
   {
-    logger_service_log("Failed to send PINGREQ\n");
-    return;
+    logger_service_log("MQTT: send CONNECT failed, attempting TCP reconnect...\n");
+    network_controller_tcp_close();
+    if (network_controller_tcp_open(s_broker_ip, s_broker_port) != WIFI_OK)
+    {
+      logger_service_log("MQTT: TCP reconnect failed\n");
+      return MQTT_FAIL;
+    }
+
+    if (wifi_command_TCP_transmit(buf, len) != WIFI_OK)
+    {
+      logger_service_log("MQTT: send CONNECT after reconnect failed\n");
+      return MQTT_FAIL;
+    }
   }
 
-  logger_service_log("Sent MQTT PINGREQ\n");
+
+  // 4) Wait (blocking) up to 5 s for CONNACK
+  uint32_t start = scheduler_millis();
+  while (scheduler_millis() - start < 5000)
+  {
+    if (_mqtt_up)
+      return MQTT_OK;
+  }
+  logger_service_log("MQTT: CONNACK timeout\n");
+  return MQTT_FAIL;
 }
 
 size_t mqtt_service_create_mqtt_connect_packet(unsigned char *buf, size_t buflen)
@@ -151,27 +202,6 @@ size_t mqtt_service_create_mqtt_connect_packet(unsigned char *buf, size_t buflen
   return len;
 }
 
-// Function to create and serialize the MQTT publish packet
-WIFI_ERROR_MESSAGE_t mqtt_service_publish(char *topic, unsigned char *payload,
-                                          unsigned char *buf, size_t buflen)
-{
-  MQTTString topicString = MQTTString_initializer;
-  size_t payloadlen = strlen((char *)payload);
-  size_t len = 0;
-
-  topicString.cstring = topic;
-  len = MQTTSerialize_publish(buf, buflen, 0, 0, 0, 0, topicString, payload,
-                              payloadlen);
-  if (len <= 0)
-    return WIFI_FAIL;
-  logger_service_log("Trying to send to  topic: %s\n", topic);
-
-  // Send the packet over TCP
-  logger_service_log("Sending publish packet: %d\n", len);
-  return wifi_command_TCP_transmit(buf, len);
-}
-
-// Function to create and serialize the MQTT disconnect packet
 size_t mqtt_service_create_mqtt_disconnect_packet(unsigned char *buf, size_t buflen)
 {
   size_t len = 0;
@@ -179,25 +209,25 @@ size_t mqtt_service_create_mqtt_disconnect_packet(unsigned char *buf, size_t buf
   return len;
 }
 
-void mqtt_service_subscribe_to_all_topics(void)
+mqtt_error_t mqtt_service_subscribe_to_all_topics(void)
 {
+  if (!_mqtt_up)
+    return MQTT_FAIL;
+
   for (int i = 0; i < NUM_TOPICS; i++)
   {
     MQTTString topic = MQTTString_initializer;
     topic.cstring = (char *)mqtt_topic_strings[i];
-
-    WIFI_ERROR_MESSAGE_t result = mqtt_service_subscribe_to_topic(topic);
-
-    if (result != WIFI_OK)
+    if (mqtt_service_subscribe_to_topic(topic) != WIFI_OK)
     {
-      logger_service_log("Unable to subscribe to topic: %s\n", topic.cstring);
+      logger_service_log("MQTT: subscribe failed %s\n", topic.cstring);
+      return MQTT_FAIL;
     }
-    else
-    {
-      logger_service_log("Subscribed to topic: %s\n", topic.cstring);
-    }
+    logger_service_log("MQTT: subscribed %s\n", topic.cstring);
   }
+  return MQTT_OK;
 }
+
 WIFI_ERROR_MESSAGE_t mqtt_service_subscribe_to_topic(MQTTString topic)
 {
   logger_service_log("Trying to subscribe to  topic: %s\n", topic.cstring);
@@ -216,4 +246,70 @@ WIFI_ERROR_MESSAGE_t mqtt_service_subscribe_to_topic(MQTTString topic)
 
   logger_service_log("Sending subscribe packet: %d\n", len);
   return wifi_command_TCP_transmit(buffer, len);
+}
+
+mqtt_error_t mqtt_service_send_pingreq(void)
+{
+  if (!_mqtt_up)
+    return MQTT_FAIL;
+  unsigned char buf[2];
+  int len = MQTTSerialize_pingreq(buf, sizeof(buf));
+  if (len <= 0 || wifi_command_TCP_transmit(buf, len) != WIFI_OK)
+  {
+    _mqtt_up = false;
+    logger_service_log("MQTT: PINGREQ failed\n");
+    return MQTT_FAIL;
+  }
+  return MQTT_OK;
+}
+
+mqtt_error_t mqtt_service_publish(const char *topic, const char *payload)
+{
+  if (!_mqtt_up)
+    return MQTT_FAIL;
+
+  unsigned char buf[256];
+  MQTTString tstr = MQTTString_initializer;
+  tstr.cstring = (char *)topic;
+  int payloadlen = (int)strlen(payload);
+  int len = MQTTSerialize_publish(
+      buf, sizeof(buf),
+      0, 0, 0, 0,
+      tstr,
+      (unsigned char *)payload,
+      payloadlen);
+  if (len <= 0)
+  {
+    logger_service_log("MQTT: serialize PUBLISH failed\n");
+    return MQTT_FAIL;
+  }
+  if (wifi_command_TCP_transmit(buf, len) != WIFI_OK)
+  {
+    _mqtt_up = false;
+    logger_service_log("MQTT: send PUBLISH failed\n");
+    return MQTT_FAIL;
+  }
+  return MQTT_OK;
+}
+
+void mqtt_service_poll(void)
+{
+  logger_service_log("MQTT: pinging");
+  // If Wi-Fi AP drops, mark MQTT down so we'll reconnect later
+  if (!network_controller_is_ap_connected())
+  {
+    _mqtt_up = false;
+    return;
+  }
+
+  if (!_mqtt_up)
+  {
+    logger_service_log("MQTT: connecting…\n");
+    if (mqtt_service_connect() == MQTT_OK)
+      mqtt_service_subscribe_to_all_topics();
+  }
+  else
+  {
+    mqtt_service_send_pingreq();
+  }
 }
