@@ -136,3 +136,8 @@ const char *wifi_get_scan_buffer(void);
 uint16_t wifi_get_scan_buffer_len(void);
 
 WIFI_ERROR_MESSAGE_t wifi_command_CWJAP_status(void);
+
+typedef struct {
+    const char *ssid;
+    const char *password;
+} wifi_credential_t;

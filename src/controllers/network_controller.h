@@ -23,11 +23,6 @@ bool network_controller_is_tcp_connected(void);
 WIFI_ERROR_MESSAGE_t network_controller_tcp_open(const char *ip,
                                                  uint16_t port);
 
-typedef struct
-{
-    char ssid[33];
-    char password[64];
-} wifi_credential_t;
 
 // Returns true and fills out_ssid/out_password on success,
 // or false if no known AP was found or scan failed.

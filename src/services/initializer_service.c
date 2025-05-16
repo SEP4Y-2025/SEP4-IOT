@@ -36,8 +36,8 @@ void initializer_service_initialize_system(void)
         mqtt_service_event_callback,
         callback_buff);
 
-    wifi_service_init();
-    mqtt_service_init("172.20.10.2", 1883);
+    wifi_service_init(); // initialized with wifi_credentials.h  
+    mqtt_service_init(mqtt_broker_ip, mqtt_broker_port); // from wifi_credentials.h
     LOG("Connected to WiFi and MQTT broker!\n");
 
 

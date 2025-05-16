@@ -4,8 +4,7 @@
 
 // #include "services/wifi_service.h"
 #include "wifi.h"
-#include <string.h>
-#include <stdio.h>
+#include "config/wifi_credentials.h"
 #include <limits.h>
 #include <stdlib.h>
 
@@ -15,20 +14,8 @@ static Network_TCP_Callback_t user_cb = NULL;
 static uint8_t net_rx_buffer[NET_TCP_BUFFER_SIZE];
 static bool _tcp_connected = false;
 
-static const wifi_credential_t known_credentials[] = {
-    {.ssid = "MartyPartyPhone", .password = "123456789"},
-    {.ssid = "JanPhone", .password = "Hello World"},
-    {.ssid = "04898804_2.4GHz", .password = "08400381"}
-    // {.ssid = "Kamtjatka10", .password = "8755444387"},
-    // …add more networks as needed…
-};
-
 static void (*_tcp_cb)(void);
 static char *_tcp_buf;
-
-static const uint8_t known_credentials_len =
-    sizeof(known_credentials) / sizeof(known_credentials[0]);
-
 
 bool wifi_get_best_credentials(uint16_t timeout_s,
                                char *out_ssid,
