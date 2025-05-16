@@ -12,8 +12,8 @@
 
 static uint32_t watering_frequency = 0; // default 0 hours
 static uint32_t water_dosage = 0;      // default 0 ml
-static bool telemetry_enabled = false;
-static bool watering_enabled = false;
+static bool telemetry_enabled = true;
+static bool watering_enabled = true;
 
 static void save_config() {
     eeprom_update_dword(EEPROM_FREQ_ADDR, watering_frequency);
@@ -34,8 +34,8 @@ void load_watering_state() {
     } else {
         watering_frequency = 0;
         water_dosage = 0;
-        telemetry_enabled = false;
-        watering_enabled = false;
+        telemetry_enabled = true;
+        watering_enabled = true;
         save_config();  // store defaults if not valid
     }
 }

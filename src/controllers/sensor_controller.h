@@ -20,5 +20,9 @@ uint8_t  sensor_controller_get_humidity_decimal(void);
 uint8_t  sensor_controller_get_humidity_integer(void);
 uint16_t sensor_controller_get_light(void);
 uint16_t sensor_controller_get_soil(void);
+uint16_t sensor_controller_get_water_level_raw(void); 
+uint8_t sensor_controller_get_water_level_percentage(void); 
+
+
 
 #endif

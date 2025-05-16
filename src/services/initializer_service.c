@@ -18,18 +18,26 @@
 #include "services/watering_service.h"
 #include "config/wifi_credentials.h"
 
-
-#define MQTT_PING_INTERVAL 15000 
-#define TELEMETRY_PUBLISH_INTERVAL 10000 
+#define MQTT_PING_INTERVAL 5000 
+#define TELEMETRY_PUBLISH_INTERVAL 30000 
 
 void initializer_service_initialize_system(void)
 {
+    // Initialize scheduler
     scheduler_init();
-    logger_service_init(9600);
 
+    // Initialize logger
+    logger_service_init(9600);
+    logger_service_log("Logger initialized");
+
+    watering_service_init();
+    logger_service_log("Watering service initialized");
+
+    // Start sensor initialization
     logger_service_log("Started sensor initialization");
     sensor_service_init();
 
+    // Start telemetry initialization
     logger_service_log("Started telemetry initialization");
     telemetry_service_init();
 
@@ -44,18 +52,24 @@ void initializer_service_initialize_system(void)
 
     logger_service_log("Connected to WiFi and MQTT broker!\n");
 
+    // Wait before subscribing to topics
     _delay_ms(5000);
     mqtt_service_subscribe_to_all_topics();
-    load_watering_state(); // Load watering settings from EEPROM
 
+    // Load watering settings from EEPROM
+    load_watering_state(); 
+
+    // Register periodic tasks for MQTT ping and telemetry
     scheduler_register(mqtt_service_send_pingreq, MQTT_PING_INTERVAL);          
     scheduler_register(telemetry_service_publish, TELEMETRY_PUBLISH_INTERVAL);     
-    
-    //For Mathias: the watering_frequency is in hours
-    //scheduler_register(watering_service_water_pot, get_watering_frequency() * 3600000); // Convert hours to milliseconds
-    scheduler_register(watering_service_water_pot, get_watering_frequency() * 1000); // Use seconds for testing
 
-    
+    uint32_t watering_frequency_seconds = get_watering_frequency() * 3600;  // Convert hours to seconds
+    logger_service_log("Watering frequency: %lu seconds", watering_frequency_seconds);
+
+    //scheduler_register(watering_service_water_pot, watering_frequency_seconds * 1000);  // for real watering in hours
+    scheduler_register(watering_service_water_pot, get_watering_frequency() * 1000);  // 10 hours -> 10 seconds
+
+    // Main loop for running scheduled tasks
     while (1) {
         scheduler_run_pending_tasks();
         _delay_ms(10); // avoid tight loop
