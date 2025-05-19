@@ -10,11 +10,6 @@
  */
 void logger_service_init(uint32_t baudrate);
 
-/**
- * @brief Send a formatted log line to the PC, automatically appends "\r\n".
- *        Usage just like printf.
- */
-void logger_service_log(const char *fmt, ...);
 
 /**
  * @brief Send a formatted log line to the PC, automatically appends "\r\n".
