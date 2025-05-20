@@ -1,0 +1,13 @@
+{
+  "name": "fff",
+  "version": "1.0.0",
+  "description": "Fake Function Framework",
+  "keywords": "testing, unit testing, mock, stub, fake",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meekrosoft/fff.git"
+  },
+  "build": {
+    "includeDir": "."
+  }
+}
