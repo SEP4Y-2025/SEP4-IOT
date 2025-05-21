@@ -1,7 +1,8 @@
-#include <avr/eeprom.h>
+
 #include "watering_state.h"
 #include <stdio.h>
 #include "services/logger_service.h"
+#include "includes.h"
 
 #define EEPROM_MARKER_ADDR ((uint8_t *)0)
 #define EEPROM_FREQ_ADDR ((uint32_t *)1)
@@ -25,7 +26,8 @@ static void save_config()
 }
 
 // Load from EEPROM (if valid), otherwise save defaults
-void load_watering_state() {
+void load_watering_state()
+{
     uint8_t marker = eeprom_read_byte(EEPROM_MARKER_ADDR);
     if (marker == EEPROM_VALID_MARKER)
     {
@@ -64,7 +66,8 @@ uint32_t get_water_dosage()
     return water_dosage;
 }
 
-void log_stored_watering_state() {
+void log_stored_watering_state()
+{
     uint8_t marker = eeprom_read_byte(EEPROM_MARKER_ADDR);
     uint32_t freq = eeprom_read_dword(EEPROM_FREQ_ADDR);
     uint32_t dosage = eeprom_read_dword(EEPROM_DOSAGE_ADDR);

@@ -8,8 +8,8 @@
 #include "config/device_config.h"
 #include "config/topics_config.h"
 #include "controllers/network_controller.h"
-#
-
+#include "state/watering_state.h"
+// #include "cont"
 char callback_buff[256];
 
 static volatile bool _mqtt_up = false;
@@ -97,7 +97,7 @@ void mqtt_service_event_callback()
         LOG("Command received: Get pot data\n");
         pot_service_handle_get_pot_data(topic, payload, payloadlen);
       }
-      else if(strcmp(topic, MQTT_TOPIC_WATERING) == 0)
+      else if (strcmp(topic, MQTT_TOPIC_WATERING) == 0)
       {
         LOG("Command received: Watering\n");
         watering_service_handle_settings_update(topic, payload, payloadlen);
@@ -175,7 +175,6 @@ mqtt_error_t mqtt_service_connect(void)
     }
   }
 
-
   // 4) Wait (blocking) up to 5 s for CONNACK
   uint32_t start = scheduler_millis();
   while (scheduler_millis() - start < 5000)
@@ -234,8 +233,8 @@ WIFI_ERROR_MESSAGE_t mqtt_service_subscribe_to_topic(MQTTString topic)
 
   uint8_t buffer[128];
 
-  uint16_t packetId = 1; 
-  int qos = 1;           // QoS level 1 (as expected)
+  uint16_t packetId = 1;
+  int qos = 1; // QoS level 1 (as expected)
 
   int len = MQTTSerialize_subscribe(buffer, sizeof(buffer), 0, packetId, 1, &topic, &qos);
 

@@ -20,9 +20,10 @@ WIFI_ERROR_MESSAGE_t network_controller_disconnect_ap(void);
 
 bool network_controller_is_tcp_connected(void);
 
+bool network_controller_tcp_close(void);
+
 WIFI_ERROR_MESSAGE_t network_controller_tcp_open(const char *ip,
                                                  uint16_t port);
-
 
 // Returns true and fills out_ssid/out_password on success,
 // or false if no known AP was found or scan failed.

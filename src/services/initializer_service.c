@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include "config/device_config.h"
 #include "services/pot_service.h"
-#include <util/delay.h>
+#include <includes.h>
 #include "config/topics_config.h"
 #include "state/watering_state.h"
 #include "services/watering_service.h"
@@ -21,7 +21,7 @@
 #include "services/wifi_service.h"
 #include "controllers/network_controller.h"
 
-#define MQTT_PING_INTERVAL 5000 
+#define MQTT_PING_INTERVAL 5000
 #define MQTT_POLL_INTERVAL_MS 15000
 #define TELEMETRY_PUBLISH_INTERVAL 30000
 #define WIFI_POLL_INTERVAL_MS 1000
@@ -36,10 +36,9 @@ void initializer_service_initialize_system(void)
         mqtt_service_event_callback,
         callback_buff);
 
-    wifi_service_init(); // initialized with wifi_credentials.h  
+    wifi_service_init();                                 // initialized with wifi_credentials.h
     mqtt_service_init(mqtt_broker_ip, mqtt_broker_port); // from wifi_credentials.h
     LOG("Connected to WiFi and MQTT broker!\n");
-
 
     // Initialize logger
     logger_service_init(9600);
@@ -58,7 +57,7 @@ void initializer_service_initialize_system(void)
 
     // Wait before subscribing to topics
     _delay_ms(5000);
-    //mqtt_service_subscribe_to_all_topics();
+    // mqtt_service_subscribe_to_all_topics();
     load_watering_state(); // Load watering settings from EEPROM
 
     scheduler_register(wifi_service_poll, WIFI_POLL_INTERVAL_MS);

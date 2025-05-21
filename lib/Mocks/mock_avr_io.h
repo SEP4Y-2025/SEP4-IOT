@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 void cli(void);
-void sei(void );
+void sei(void);
 #define PB7 7
 #define F_CPU 16000000L
 #define TXEN0 3
@@ -48,13 +48,13 @@ extern uint8_t UCSR2C;
 
 extern uint8_t UCSR3C;
 
-extern uint8_t UCSR1B; 
+extern uint8_t UCSR1B;
 #define UDRIE1 5
-extern uint8_t UCSR2B; 
+extern uint8_t UCSR2B;
 #define UDRIE2 5
-extern uint8_t UCSR3B; 
+extern uint8_t UCSR3B;
 #define UDRIE3 5
-extern uint8_t UCSR0B; 
+extern uint8_t UCSR0B;
 #define UDRIE0 5
 extern uint8_t UCSR0A;
 extern uint8_t UCSR1A;
@@ -99,7 +99,6 @@ extern uint8_t PORTA;
 extern uint8_t DDRG;
 extern uint8_t PORTG;
 
-
 extern uint8_t DDRD;
 extern uint8_t PORTD;
 extern uint8_t PIND;
@@ -124,12 +123,11 @@ extern uint8_t EIMSK;
 extern uint8_t EICRA;
 #define PB1 1
 #define PB2 2
-#define PB3 3 
-#define PB0 0 
+#define PB3 3
+#define PB0 0
 
-#define  PL6 6
-#define  PL7 7
-
+#define PL6 6
+#define PL7 7
 
 #define PF1 1
 #define PF2 2
@@ -172,11 +170,11 @@ extern uint8_t PINK;
 #define PB5 5
 #define PB4 4
 
- extern uint8_t ADMUX;
- extern  uint8_t ADCSRA;
- extern  uint8_t ADCSRB;
-extern  uint8_t ADCL;
- extern  uint8_t ADCH;
+extern uint8_t ADMUX;
+extern uint8_t ADCSRA;
+extern uint8_t ADCSRB;
+extern uint8_t ADCL;
+extern uint8_t ADCH;
 extern uint8_t DIDR2;
 #define REFS0 6
 #define ADEN 7
@@ -189,7 +187,6 @@ extern uint8_t DIDR2;
 #define PK1 1
 #define PK2 2
 #define ADSC 6
-
 
 extern uint8_t TCCR3A;
 extern uint8_t TCCR3B;
@@ -204,7 +201,6 @@ extern uint8_t OCR3C;
 #define OCIE3B 2
 #define OCIE3C 3
 
-
 extern uint8_t ADCSRA;
 extern uint8_t ADCL;
 extern uint8_t ADCH;
@@ -214,39 +210,38 @@ extern uint8_t ADCH;
 #define PK1 1
 #define PK0 0
 
-//hc-sr04
-//Vcc
+// hc-sr04
+// Vcc
 extern uint8_t DDRC;
-extern uint8_t  PORTC;
-#define  PC0 0
+extern uint8_t PORTC;
+#define PC0 0
 
-//GND
-extern uint8_t  DDRC; 
-#define  PC6 6
+// GND
+extern uint8_t DDRC;
+#define PC6 6
 
-//Trigger
-extern uint8_t  DDRC;
-#define  PC2 2
-extern uint8_t  PORTC;
+// Trigger
+extern uint8_t DDRC;
+#define PC2 2
+extern uint8_t PORTC;
 
-//Echo
-extern uint8_t  PINC;
+// Echo
+extern uint8_t PINC;
 #define PC4 4
 
+// pir
+// Vcc
 
-//pir
-//Vcc
+extern uint8_t PORTK;
+#define PK5 5
 
-extern uint8_t  PORTK;
-#define   PK5 5
+// GND
+extern uint8_t DDRK; // DDRK
+#define PK3 3        // PK7
 
-//GND
-extern uint8_t  DDRK; //DDRK
-#define  PK3 3 //PK7
+// signal
 
-//signal
-
-#define  PK4 4
+#define PK4 4
 
 extern uint8_t PINK;
 
@@ -255,20 +250,137 @@ extern uint8_t PINK;
 extern uint8_t PCICR;
 extern uint8_t PCMSK2;
 
-
-//tone 
+// tone
 #define PA1 1
 extern uint8_t TCCR2A;
 extern uint8_t TCCR2B;
 extern uint8_t TCNT2;
 
-        // Busy-wait
+// Busy-wait
 #define CS22 2
 #define CS21 1
 #define CS20 0
-
 
 #define PE3 3
 #define PC7 7
 #define PA6 6
 #define PA4 4
+
+#define MUX3 3
+#define MUX4 4
+extern uint16_t ADC;
+
+static inline uint8_t eeprom_read_byte(const uint8_t *addr)
+{
+        (void)addr;
+        return 0x00;
+}
+static inline void eeprom_write_byte(uint8_t *addr, uint8_t val)
+{
+        (void)addr;
+        (void)val;
+}
+
+static inline void eeprom_update_byte(uint8_t *addr, uint8_t val)
+{
+        *addr = val;
+}
+
+static inline void eeprom_update_dword(uint32_t *addr, uint32_t val)
+{
+        *addr = val;
+}
+
+static inline uint32_t eeprom_read_dword(const uint32_t *addr)
+{
+        return *addr;
+}
+
+static inline uint8_t digitalPinToPort(uint8_t pin)
+{
+        (void)pin;
+        return 1; /* PORTB */
+}
+static inline uint8_t digitalPinToBitMask(uint8_t pin) { return (1 << pin); }
+
+static inline volatile uint8_t *portModeRegister(uint8_t port)
+{
+        (void)port;
+        return &PORTB;
+}
+static inline volatile uint8_t *portOutputRegister(uint8_t port)
+{
+        (void)port;
+        return &PORTB;
+}
+static inline volatile uint8_t *portInputRegister(uint8_t port)
+{
+        (void)port;
+        return &PINB;
+}
+
+#define NUM_DIGITAL_PINS 20
+// stub the actual registers
+extern uint8_t PORTB, PINB;
+
+// Pin modes (already had these)
+#define INPUT 0
+#define OUTPUT 1
+
+// Pin levels — add these!
+#define LOW 0
+#define HIGH 1
+
+static inline void pinMode(uint8_t pin, uint8_t mode)
+{
+        (void)pin;
+        (void)mode;
+}
+static inline void digitalWrite(uint8_t pin, uint8_t val)
+{
+        (void)pin;
+        (void)val;
+}
+static inline int digitalRead(uint8_t pin)
+{
+        (void)pin;
+        return 0;
+}
+
+typedef struct
+{
+        void (*begin)(unsigned long);
+        int (*print)(const char *);
+        int (*println)(const char *);
+} MockSerial;
+
+static void MockSerial_begin(unsigned long b) { (void)b; }
+static int MockSerial_print(const char *s)
+{
+        (void)s;
+        return 0;
+}
+static int MockSerial_println(const char *s)
+{
+        (void)s;
+        return 0;
+}
+
+static MockSerial Serial = {
+    .begin = MockSerial_begin,
+    .print = MockSerial_print,
+    .println = MockSerial_println};
+
+// Analog pin numbers
+#define A0 0
+#define A1 1
+#define A2 2
+#define A3 3
+#define A4 4
+#define A5 5
+
+static inline int analogRead(uint8_t pin)
+{
+        (void)pin;
+        return 0; // or some test-driven value if you want
+}

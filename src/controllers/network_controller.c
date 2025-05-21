@@ -7,6 +7,7 @@
 #include "config/wifi_credentials.h"
 #include <limits.h>
 #include <stdlib.h>
+#include <string.h>
 
 /// Store user’s TCP callback and internal buffer
 static Network_TCP_Callback_t user_cb = NULL;
@@ -67,7 +68,7 @@ bool wifi_get_best_credentials(uint16_t timeout_s,
             if (sscanf(line, "+CWLAP:(%*d,\"%32[^\"]\",%d", a.ssid, &a.rssi) == 2)
             {
                 LOG("  found [%u] '%s' (RSSI %d)",
-                                   found_count, a.ssid, a.rssi);
+                    found_count, a.ssid, a.rssi);
                 found[found_count++] = a;
             }
         }
@@ -109,7 +110,7 @@ bool wifi_get_best_credentials(uint16_t timeout_s,
     strcpy(out_ssid, known_credentials[best_idx].ssid);
     strcpy(out_password, known_credentials[best_idx].password);
     LOG("get_best_creds: chosen '%s' (%d dBm)",
-                       out_ssid, best_rssi);
+        out_ssid, best_rssi);
 
     return true;
 }
@@ -185,9 +186,9 @@ WIFI_ERROR_MESSAGE_t network_controller_tcp_open(const char *ip,
         _tcp_cb, _tcp_buf);
     _tcp_connected = (r == WIFI_OK);
     LOG("TCP open %s:%u → %s (err=%d)\n",
-                       ip, (unsigned)port,
-                       r == WIFI_OK ? "OK" : "FAIL",
-                       r);
+        ip, (unsigned)port,
+        r == WIFI_OK ? "OK" : "FAIL",
+        r);
     return r;
 }
 

@@ -13,7 +13,7 @@
 #include "utils/json_parser.h"
 #include "utils/adc_to_percentage_converter.h"
 #include "utils/adc_to_lux_converter.h"
-#include <avr/eeprom.h>
+#include "includes.h"
 
 #define JSON_BUF_SIZE 512
 static char _json_buf[JSON_BUF_SIZE];
@@ -70,7 +70,7 @@ bool pot_service_handle_get_pot_data(const char *topic, const uint8_t *payload, 
 {
     LOG("Pot data requested");
 
-    //sensor_controller_read();
+    // sensor_controller_read();
     sensor_service_read();
     uint8_t hum_i = sensor_service_get_humidity_integer();
     uint8_t hum_d = sensor_service_get_humidity_decimal();

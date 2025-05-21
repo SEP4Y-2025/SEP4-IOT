@@ -4,6 +4,9 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
+#include <avr/eeprom.h>
+#include <pins_arduino.h>
+#include <Arduino.h>
 #endif
 
 #include <stddef.h>
