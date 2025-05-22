@@ -71,27 +71,21 @@ WIFI_ERROR_MESSAGE_t wifi_command(const char *str, uint16_t timeOut_s)
     }
 
     // 5) determine result
-    WIFI_ERROR_MESSAGE_t res;
+    WIFI_ERROR_MESSAGE_t error;
     if (wifi_dataBufferIndex == 0)
-    {
-        res = WIFI_ERROR_NOT_RECEIVING;
-    }
-    else if (strstr((char *)wifi_dataBuffer, "ERROR"))
-    {
-        res = WIFI_ERROR_RECEIVED_ERROR;
-    }
-    else if (strstr((char *)wifi_dataBuffer, "FAIL"))
-    {
-        res = WIFI_FAIL;
-    }
+        error = WIFI_ERROR_NOT_RECEIVING;
+    else if (strstr((char *)wifi_dataBuffer, "OK") != NULL)
+        error = WIFI_OK;
+    else if (strstr((char *)wifi_dataBuffer, "ERROR") != NULL)
+        error = WIFI_ERROR_RECEIVED_ERROR;
+    else if (strstr((char *)wifi_dataBuffer, "FAIL") != NULL)
+        error = WIFI_FAIL;
     else
-    {
-        res = WIFI_OK;
-    }
+        error = WIFI_ERROR_RECEIVING_GARBAGE;
 
     // 6) restore the previous callback (leave buffer intact)
     uart_init(USART_WIFI, wifi_baudrate, old_cb);
-    return res;
+    return error;
 }
 
 WIFI_ERROR_MESSAGE_t wifi_command_AT()
