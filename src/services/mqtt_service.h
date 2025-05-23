@@ -17,7 +17,7 @@ typedef enum
 } mqtt_error_t;
 
 // Call once at startup to kick off the poller
-void mqtt_service_init(char *broker_ip, uint16_t broker_port);
+void mqtt_service_init(const char *broker_ip, uint16_t broker_port);
 
 // Called by network_controller when bytes arrive
 void mqtt_service_event_callback(void);

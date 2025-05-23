@@ -18,7 +18,7 @@ static uint32_t _poll_ms;
 static char *s_broker_ip;
 static uint16_t s_broker_port;
 
-void mqtt_service_init(char *broker_ip, uint16_t broker_port)
+void mqtt_service_init(const char *broker_ip, uint16_t broker_port)
 {
   s_broker_ip = broker_ip;
   s_broker_port = broker_port;

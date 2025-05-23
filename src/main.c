@@ -3,7 +3,10 @@
 
 int main(void)
 {
+#ifndef WINDOWS_TEST
     initializer_service_initialize_system();
+#endif
+
     LOG("Initialization complete.\n");
 
     return 0;
