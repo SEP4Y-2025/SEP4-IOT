@@ -18,6 +18,7 @@ static bool _tcp_connected = false;
 static void (*_tcp_cb)(void);
 static char *_tcp_buf;
 
+// From config/wifi_credentials.h
 bool wifi_get_best_credentials(uint16_t timeout_s,
                                char *out_ssid,
                                char *out_password)
