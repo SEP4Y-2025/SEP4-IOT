@@ -1,6 +1,5 @@
 #include "unity.h"
 #include "uart.h"
-#include "mock_avr_io.h"
 #include "../fff.h"
 
 DEFINE_FFF_GLOBALS

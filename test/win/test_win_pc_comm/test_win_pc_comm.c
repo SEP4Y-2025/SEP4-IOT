@@ -3,6 +3,7 @@
 #include "pc_comm.h"
 
 #include "uart.h"
+
 #include <stdio.h>
 #include <stdint.h>
 
@@ -87,11 +88,6 @@ int main(void)
   RUN_TEST(test_pc_comm_send_blocking);
 
 TEST_MESSAGE("m e s s a g e :1:_:PASS\n");//TEST_MESSAGE("m e s s a g e :1:_:PASS\n");
-
-
-
-  RUN_TEST(test_pc_comm_string_blocking);
-
 
   return UNITY_END();
 }

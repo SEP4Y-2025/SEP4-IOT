@@ -16,6 +16,7 @@ FAKE_VOID_FUNC(sei);
 FAKE_VOID_FUNC(cli);
 FAKE_VOID_FUNC(_delay_ms, int);
 
+FAKE_VOID_FUNC(uart_send_blocking, USART_t, uint8_t);
 FAKE_VOID_FUNC(uart_send_string_blocking, USART_t, char *);
 FAKE_VOID_FUNC(uart_init, USART_t, uint32_t, UART_Callback_t);
 FAKE_VOID_FUNC(uart_send_array_blocking, USART_t, uint8_t *, uint16_t);
