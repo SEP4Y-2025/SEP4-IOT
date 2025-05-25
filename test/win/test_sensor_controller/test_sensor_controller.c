@@ -3,7 +3,7 @@
 #include "dht11.h"
 
 // Include the controller under test
-#include "controllers/sensor_controller.h"
+#include "../../src/controllers/sensor_controller.c"
 
 DEFINE_FFF_GLOBALS;
 
@@ -86,3 +86,10 @@ void test_sensor_controller_get_water_level(void)
     TEST_ASSERT_EQUAL_UINT8(42, sensor_controller_get_water_level_percentage());
 }
 
+int main(void) {
+    UNITY_BEGIN();
+    RUN_TEST(test_sensor_controller_init_should_call_all_sensor_inits);
+    RUN_TEST(test_sensor_controller_read_should_store_sensor_values);
+    RUN_TEST(test_sensor_controller_get_water_level);
+    return UNITY_END();
+}
