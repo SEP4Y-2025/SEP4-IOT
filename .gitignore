@@ -15,3 +15,7 @@ compile_commands.json
 mosquitto/data/*
 mosquitto/log/*
 node_modules
+
+credentials.csv
+src/config/wifi_credentials.h
+platformio.ini

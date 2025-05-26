@@ -9,7 +9,7 @@
  * @author Erland Larsen, VIA University College
  */
 #include "soil.h"
-#include "avr/io.h"
+#include "includes.h"
 
 /**
  * @brief Initialize ADC for Soil Moisture sensor

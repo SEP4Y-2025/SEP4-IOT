@@ -87,7 +87,6 @@ int main(void)
     TEST_MESSAGE("INFO!!!! When_the displayed_is_finished (reaching 9999), all 3 buttons should be pressed! :1:_:PASS\n"); // TEST_MESSAGE("m e s s a g e :1:_:PASS\n");
     RUN_TEST(test_display);
     RUN_TEST(test_button_pressed);
-
     RUN_TEST(test_servo);
 
     return UNITY_END();

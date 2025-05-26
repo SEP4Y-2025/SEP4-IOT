@@ -3,8 +3,11 @@
 
 int main(void)
 {
+#ifndef WINDOWS_TEST
     initializer_service_initialize_system();
-    logger_service_log("Initialization complete.\n");
+#endif
+
+    LOG("Initialization complete.\n");
 
     return 0;
 }
