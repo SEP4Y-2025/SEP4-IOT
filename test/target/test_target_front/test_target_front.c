@@ -51,28 +51,28 @@ void test_light_returns_a_value()
     TEST_ASSERT_INT16_WITHIN(400, 500, light);
 
     char message[1024];
-    sprintf(message, "INFO! photo_resistor measurement= %d       :1:_:PASS\n", light);
-    TEST_MESSAGE(message); // TEST_MESSAGE("m e s s a g e :1:_:PASS\n"); // no : in the message
+    sprintf(message, "INFO! photo_resistor measurement= %d\n", light);
+    TEST_MESSAGE(message);
 }
 
 void test_light_is_dark()
 {
     light_init();
 
-    TEST_MESSAGE("INFO! 5 sec to make dark        :1:_:PASS\n"); // TEST_MESSAGE("m e s s a g e :1:_:PASS\n"); // no : in the message
+    TEST_MESSAGE("INFO! 5 sec to make dark\n"); 
     _delay_ms(1000);
-    TEST_MESSAGE("INFO! 4 sec to make dark        :1:_:PASS\n"); // TEST_MESSAGE("m e s s a g e :1:_:PASS\n"); // no : in the message
+    TEST_MESSAGE("INFO! 4 sec to make dark\n");
     _delay_ms(1000);
-    TEST_MESSAGE("INFO! 3 sec to make dark        :1:_:PASS\n"); // TEST_MESSAGE("m e s s a g e :1:_:PASS\n"); // no : in the message
+    TEST_MESSAGE("INFO! 3 sec to make dark\n"); 
     _delay_ms(1000);
-    TEST_MESSAGE("INFO! 2 sec to make dark        :1:_:PASS\n"); // TEST_MESSAGE("m e s s a g e :1:_:PASS\n"); // no : in the message
+    TEST_MESSAGE("INFO! 2 sec to make dark\n");
     _delay_ms(1000);
-    TEST_MESSAGE("INFO! 1 sec to make dark        :1:_:PASS\n"); // TEST_MESSAGE("m e s s a g e :1:_:PASS\n"); // no : in the message
+    TEST_MESSAGE("INFO! 1 sec to make dark\n"); 
     _delay_ms(1000);
     uint16_t light = light_read();
     char message[1024];
-    sprintf(message, "INFO! photo_resistor while dark measurement= %d       :1:_:PASS\n", light);
-    TEST_MESSAGE(message); // TEST_MESSAGE("m e s s a g e :1:_:PASS\n"); // no : in the message
+    sprintf(message, "INFO! photo_resistor while dark measurement= %d", light);
+    TEST_MESSAGE(message); 
     TEST_ASSERT_TRUE_MESSAGE((light > 5 && light < 300), "There should be dark, (light > 5 && light < 300)");
 }
 
@@ -81,7 +81,7 @@ void test_light_is_is_light()
 
     light_init();
 
-    TEST_MESSAGE("INFO! 2 sec to make light        :1:_:PASS\n"); // TEST_MESSAGE("m e s s a g e :1:_:PASS\n"); // no : in the message
+    TEST_MESSAGE("INFO! 2 sec tSo make light        :1:_:PASS\n"); // TEST_MESSAGE("m e s s a g e :1:_:PASS\n"); // no : in the message
     _delay_ms(1000);
     TEST_MESSAGE("INFO! 1 sec to make light        :1:_:PASS\n"); // TEST_MESSAGE("m e s s a g e :1:_:PASS\n"); // no : in the message
     _delay_ms(1000);

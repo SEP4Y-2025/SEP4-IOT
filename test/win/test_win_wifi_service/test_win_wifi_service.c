@@ -78,6 +78,99 @@ void test_poll_transitions_connecting_to_connected(void)
     wifi_service_poll();
     TEST_ASSERT_TRUE(wifi_service_is_connected());
 }
+// Need to access static variable 'state' inside wifi_service.c for some tests.
+// Declare it as extern here to manipulate state directly.
+extern wifi_state_t state;
+
+// Test poll() transitions DISCONNECTED -> CONNECTING after 5 seconds
+void test_poll_disconnected_to_connecting_after_timeout(void)
+{
+    wifi_service_init();
+
+    // simulate time passes more than 5000ms
+    scheduler_millis_fake.return_val += 5001;
+
+    network_controller_connect_ap_fake.return_val = WIFI_OK;
+
+    wifi_service_poll();
+
+    // Should have called network_controller_connect_ap()
+    TEST_ASSERT_EQUAL_INT(1, network_controller_connect_ap_fake.call_count);
+    // Should NOT be connected yet
+    TEST_ASSERT_FALSE(wifi_service_is_connected());
+    // State should now be CONNECTING
+    TEST_ASSERT_EQUAL_INT(CONNECTING, state);
+}
+
+// Test poll() transitions CONNECTING -> DISCONNECTED on failure to connect
+void test_poll_connecting_to_disconnected_on_fail(void)
+{
+    wifi_service_init();
+    wifi_service_connect();
+
+    // Simulate time passed > 3000ms
+    scheduler_millis_fake.return_val += 3001;
+
+    // Simulate failure: not connected
+    network_controller_is_ap_connected_fake.return_val = false;
+
+    wifi_service_poll();
+
+    TEST_ASSERT_FALSE(wifi_service_is_connected());
+    TEST_ASSERT_EQUAL_INT(DISCONNECTED, state);
+}
+
+// Test poll() transitions CONNECTED -> DISCONNECTED when connection lost
+void test_poll_connected_to_disconnected_on_lost_connection(void)
+{
+    wifi_service_init();
+
+    // Force state to CONNECTED
+    state = CONNECTED;
+
+    // Simulate time passed > 30000ms
+    scheduler_millis_fake.return_val += 30001;
+
+    // Simulate lost connection
+    network_controller_is_ap_connected_fake.return_val = false;
+
+    wifi_service_poll();
+
+    TEST_ASSERT_FALSE(wifi_service_is_connected());
+    TEST_ASSERT_EQUAL_INT(DISCONNECTED, state);
+}
+
+// Test poll() resets invalid state to DISCONNECTED
+void test_poll_invalid_state_resets_to_disconnected(void)
+{
+    wifi_service_init();
+
+    // Force invalid state
+    state = WIFI_STATE_MAX + 10;
+
+    scheduler_millis_fake.return_val += 1000;
+
+    wifi_service_poll();
+
+    TEST_ASSERT_FALSE(wifi_service_is_connected());
+    TEST_ASSERT_EQUAL_INT(DISCONNECTED, state);
+}
+
+// Additional: test wifi_service_is_connected returns false when not CONNECTED
+void test_wifi_service_is_connected_false_in_other_states(void)
+{
+    wifi_service_init();
+
+    TEST_ASSERT_FALSE(wifi_service_is_connected());
+
+    // Force state to DISCONNECTED
+    state = DISCONNECTED;
+    TEST_ASSERT_FALSE(wifi_service_is_connected());
+
+    // Force state to CONNECTING
+    state = CONNECTING;
+    TEST_ASSERT_FALSE(wifi_service_is_connected());
+}
 
 int main(void)
 {
@@ -85,5 +178,10 @@ int main(void)
     RUN_TEST(test_init_records_time_and_is_disconnected);
     RUN_TEST(test_connect_calls_controller_and_returns_status);
     RUN_TEST(test_poll_transitions_connecting_to_connected);
+    RUN_TEST(test_poll_disconnected_to_connecting_after_timeout);
+    RUN_TEST(test_poll_connecting_to_disconnected_on_fail);
+    RUN_TEST(test_poll_connected_to_disconnected_on_lost_connection);
+    RUN_TEST(test_poll_invalid_state_resets_to_disconnected);
+    RUN_TEST(test_wifi_service_is_connected_false_in_other_states);
     return UNITY_END();
 }

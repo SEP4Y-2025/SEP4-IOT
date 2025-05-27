@@ -82,10 +82,122 @@ void test_connect_ap_succeeds_when_known_ssid_found(void) {
     WIFI_ERROR_MESSAGE_t result = network_controller_connect_ap(5);
     TEST_ASSERT_EQUAL(WIFI_OK, result);
 }
+void test_network_controller_setup_should_return_true_when_all_ok(void) {
+    wifi_command_disable_echo_fake.return_val = WIFI_OK;
+    wifi_command_set_mode_to_1_fake.return_val = WIFI_OK;
+    wifi_command_set_to_single_Connection_fake.return_val = WIFI_OK;
+
+    TEST_ASSERT_TRUE(network_controller_setup());
+}
+
+void test_network_controller_setup_should_return_false_on_failure(void) {
+    wifi_command_disable_echo_fake.return_val = WIFI_FAIL;
+
+    TEST_ASSERT_FALSE(network_controller_setup());
+}
+
+void test_network_controller_disconnect_ap_should_return_ok(void) {
+    wifi_command_quit_AP_fake.return_val = WIFI_OK;
+
+    TEST_ASSERT_EQUAL(WIFI_OK, network_controller_disconnect_ap());
+}
+
+void test_network_controller_disconnect_ap_should_return_fail(void) {
+    wifi_command_quit_AP_fake.return_val = WIFI_FAIL;
+
+    TEST_ASSERT_EQUAL(WIFI_FAIL, network_controller_disconnect_ap());
+}
+
+void test_network_controller_is_tcp_connected(void) {
+    // Should reflect _tcp_connected internal flag
+    // By opening a TCP connection
+    wifi_command_create_TCP_connection_fake.return_val = WIFI_OK;
+
+    network_controller_tcp_open("192.168.0.1", 1234);
+    TEST_ASSERT_TRUE(network_controller_is_tcp_connected());
+}
+
+void test_network_controller_is_ap_connected_should_return_true_if_status_ok_and_cwjap_in_buffer(void) {
+    wifi_command_CWJAP_status_fake.return_val = WIFI_OK;
+    wifi_get_scan_buffer_fake.return_val = "+CWJAP:\"SSID\"";
+
+    TEST_ASSERT_TRUE(network_controller_is_ap_connected());
+}
+
+void test_network_controller_is_ap_connected_should_return_false_on_status_fail(void) {
+    wifi_command_CWJAP_status_fake.return_val = WIFI_FAIL;
+
+    TEST_ASSERT_FALSE(network_controller_is_ap_connected());
+}
+
+void test_network_controller_is_ap_connected_should_return_false_if_cwjap_missing(void) {
+    wifi_command_CWJAP_status_fake.return_val = WIFI_OK;
+    wifi_get_scan_buffer_fake.return_val = "NO_AP";
+
+    TEST_ASSERT_FALSE(network_controller_is_ap_connected());
+}
+
+void test_network_controller_tcp_open_should_return_ok_and_set_connected_true(void) {
+    wifi_command_create_TCP_connection_fake.return_val = WIFI_OK;
+
+    WIFI_ERROR_MESSAGE_t r = network_controller_tcp_open("1.2.3.4", 1883);
+    TEST_ASSERT_EQUAL(WIFI_OK, r);
+    TEST_ASSERT_TRUE(network_controller_is_tcp_connected());
+}
+
+void test_network_controller_tcp_open_should_return_fail_and_set_connected_false(void) {
+    wifi_command_create_TCP_connection_fake.return_val = WIFI_FAIL;
+
+    WIFI_ERROR_MESSAGE_t r = network_controller_tcp_open("1.2.3.4", 1883);
+    TEST_ASSERT_EQUAL(WIFI_FAIL, r);
+    TEST_ASSERT_FALSE(network_controller_is_tcp_connected());
+}
+
+void test_network_controller_tcp_send_should_return_true_on_success(void) {
+    wifi_command_TCP_transmit_fake.return_val = WIFI_OK;
+
+    const uint8_t data[] = "hello";
+    TEST_ASSERT_TRUE(network_controller_tcp_send(data, sizeof(data)));
+}
+
+void test_network_controller_tcp_send_should_return_false_on_failure(void) {
+    wifi_command_TCP_transmit_fake.return_val = WIFI_FAIL;
+
+    const uint8_t data[] = "hello";
+    TEST_ASSERT_FALSE(network_controller_tcp_send(data, sizeof(data)));
+}
+
+void test_network_controller_tcp_close_should_return_true_on_success(void) {
+    wifi_command_close_TCP_connection_fake.return_val = WIFI_OK;
+
+    TEST_ASSERT_TRUE(network_controller_tcp_close());
+}
+
+void test_network_controller_tcp_close_should_return_false_on_failure(void) {
+    wifi_command_close_TCP_connection_fake.return_val = WIFI_FAIL;
+
+    TEST_ASSERT_FALSE(network_controller_tcp_close());
+}
+
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_network_controller_init_should_call_wifi_init);
     RUN_TEST(test_connect_ap_fails_if_no_known_ssid_found);
     RUN_TEST(test_connect_ap_succeeds_when_known_ssid_found);
+    RUN_TEST(test_network_controller_setup_should_return_true_when_all_ok);
+    RUN_TEST(test_network_controller_setup_should_return_false_on_failure);
+    RUN_TEST(test_network_controller_disconnect_ap_should_return_ok);
+    RUN_TEST(test_network_controller_disconnect_ap_should_return_fail);
+    RUN_TEST(test_network_controller_is_tcp_connected);
+    RUN_TEST(test_network_controller_is_ap_connected_should_return_true_if_status_ok_and_cwjap_in_buffer);
+    RUN_TEST(test_network_controller_is_ap_connected_should_return_false_on_status_fail);
+    RUN_TEST(test_network_controller_is_ap_connected_should_return_false_if_cwjap_missing);
+    RUN_TEST(test_network_controller_tcp_open_should_return_ok_and_set_connected_true);
+    RUN_TEST(test_network_controller_tcp_open_should_return_fail_and_set_connected_false);
+    RUN_TEST(test_network_controller_tcp_send_should_return_true_on_success);
+    RUN_TEST(test_network_controller_tcp_send_should_return_false_on_failure);
+    RUN_TEST(test_network_controller_tcp_close_should_return_true_on_success);
+    RUN_TEST(test_network_controller_tcp_close_should_return_false_on_failure);
+
     return UNITY_END();
 }
