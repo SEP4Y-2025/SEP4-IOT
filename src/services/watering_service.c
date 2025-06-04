@@ -39,8 +39,8 @@ void watering_service_water_pot(void)
     LOG(buffer);
     if (water_level >= 30)
     {
-        // uint32_t dosage = get_water_dosage();  // Amount of water to use
-        double dosage = 25.0;
+        uint32_t dosage = get_water_dosage();  // Amount of water to use
+        //double dosage = 25.0;
         LOG("Watering pot...\n");
 
         uint32_t watering_time_ms = dosage / 240000 * 3600 * 1000 * 2;

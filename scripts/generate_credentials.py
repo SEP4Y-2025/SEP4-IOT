@@ -3,7 +3,7 @@ import os
 
 output_path = os.path.join("src", "config", "wifi_credentials.h")
 
-mqtt_broker_ip = "172.20.10.2"
+mqtt_broker_ip = "20.166.171.243"
 mqtt_broker_port = 1883
 with open('credentials.csv') as csvfile:
     reader = csv.DictReader(csvfile)

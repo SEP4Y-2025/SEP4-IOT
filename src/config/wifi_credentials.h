@@ -16,5 +16,5 @@ static const wifi_credential_t known_credentials[] = {
 
 static const uint8_t known_credentials_len = sizeof(known_credentials) / sizeof(known_credentials[0]);
 
-static const char *mqtt_broker_ip = "172.20.10.2";
+static const char *mqtt_broker_ip = "20.166.171.243";
 static const int mqtt_broker_port = 1883;
